@@ -65,6 +65,7 @@ namespace revs_bens_service
             app.UseMiddleware<Availability>();
             app.UseMiddleware<ExceptionHandling>();
             app.UseHttpsRedirection();
+            app.UseHealthChecks("/healthcheck", HealthCheckConfig.Options);
             app.UseSwagger();
 
             var swaggerPrefix = env.IsDevelopment() ? string.Empty : "/revsbensservice";
