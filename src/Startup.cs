@@ -29,7 +29,6 @@ namespace revs_bens_service
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddHealthChecks()
                 .AddCheck<TestHealthCheck>("TestHealthCheck");
-            services.AddAvailability();
             services.AddResilientHttpClients<IGateway, Gateway>(Configuration);
             services.AddSwaggerGen(c =>
             {
@@ -46,6 +45,10 @@ namespace revs_bens_service
                     {"Bearer", new string[] { }},
                 });
             });
+
+            services.AddHttpClient();
+
+            services.AddAvailability();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -62,13 +65,14 @@ namespace revs_bens_service
             app.UseMiddleware<Availability>();
             app.UseMiddleware<ExceptionHandling>();
             app.UseHttpsRedirection();
-            app.UseHealthChecks("/healthcheck", HealthCheckConfig.Options);
-            app.UseMvc();
             app.UseSwagger();
+
+            var swaggerPrefix = env.IsDevelopment() ? string.Empty : "/revsbensservice";
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "revs_bens_service API");
+                c.SwaggerEndpoint($"{swaggerPrefix}/swagger/v1/swagger.json", "revs_bens_service API");
             });
+            app.UseMvc();
         }
     }
 }
