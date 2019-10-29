@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using revs_bens_service.Services.Dashboard;
 using StockportGovUK.AspNetCore.Middleware;
 using StockportGovUK.AspNetCore.Availability;
 using StockportGovUK.AspNetCore.Availability.Middleware;
@@ -26,6 +27,9 @@ namespace revs_bens_service
 
         public void ConfigureServices(IServiceCollection services)
         {
+
+            services.AddSingleton<IDashboardService, DashboardService>();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddHealthChecks()
                 .AddCheck<TestHealthCheck>("TestHealthCheck");
