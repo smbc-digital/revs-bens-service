@@ -26,12 +26,6 @@
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="StockportGovUK.AspNetCore.Gateways">
-      <HintPath>C:\code\libraries\StockportGovUK.AspNetCore.Gateways\bin\Debug\netcoreapp2.2\StockportGovUK.AspNetCore.Gateways.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
   <PropertyGroup>
     <PackageLicenseFile>License.txt</PackageLicenseFile>
     <LangVersion>7.1</LangVersion>
