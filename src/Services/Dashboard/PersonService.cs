@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using revs_bens_service.Utils.Parsers;
 using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
 
 namespace revs_bens_service.Services.Dashboard
@@ -18,7 +19,7 @@ namespace revs_bens_service.Services.Dashboard
 
             if (response.IsSuccessStatusCode)
             {
-                return bool.Parse(await response.Content.ReadAsStringAsync());
+                return response.Parse<bool>().ResponseContent;
             }
 
             throw new Exception($"IsBenefistClaimant({personReference}) failed with status code: {response.StatusCode}");
