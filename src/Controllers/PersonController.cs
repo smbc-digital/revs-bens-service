@@ -20,8 +20,8 @@ namespace revs_bens_service.Controllers
         }
 
         [HttpGet]
-        [Route("summary/{personReference}")]
-        public async Task<IActionResult> GetAccountSummary([FromRoute][Required]string personReference)
+        [Route("summary/{personReference}/benefits-claimant")]
+        public async Task<IActionResult> IsBenefitsClaimant([FromRoute][Required]string personReference)
         {
             var model = await _personService.IsBenefitsClaimant(personReference);
 

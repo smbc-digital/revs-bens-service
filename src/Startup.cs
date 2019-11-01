@@ -12,6 +12,7 @@ using StockportGovUK.AspNetCore.Availability;
 using StockportGovUK.AspNetCore.Availability.Middleware;
 using StockportGovUK.AspNetCore.Gateways;
 using Swashbuckle.AspNetCore.Swagger;
+using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
 
 namespace revs_bens_service
 {
@@ -27,13 +28,16 @@ namespace revs_bens_service
 
         public void ConfigureServices(IServiceCollection services)
         {
-
-            services.AddSingleton<IDashboardService, DashboardService>();
+            services.AddSingleton<IPersonService, PersonService>();
+            services.AddSingleton<ICivicaServiceGateway, CivicaServiceGateway>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddAvailability();
+            services.AddResilientHttpClients<IGateway, Gateway>(Configuration);
             services.AddHealthChecks()
                 .AddCheck<TestHealthCheck>("TestHealthCheck");
-            services.AddResilientHttpClients<IGateway, Gateway>(Configuration);
+            services.AddHttpClient();
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new Info { Title = "revs_bens_service API", Version = "v1" });
@@ -49,10 +53,6 @@ namespace revs_bens_service
                     {"Bearer", new string[] { }},
                 });
             });
-
-            services.AddHttpClient();
-
-            services.AddAvailability();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -71,13 +71,12 @@ namespace revs_bens_service
             app.UseHttpsRedirection();
             app.UseHealthChecks("/healthcheck", HealthCheckConfig.Options);
             app.UseSwagger();
-
+            app.UseMvc();
             var swaggerPrefix = env.IsDevelopment() ? string.Empty : "/revsbensservice";
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint($"{swaggerPrefix}/swagger/v1/swagger.json", "revs_bens_service API");
             });
-            app.UseMvc();
         }
     }
 }

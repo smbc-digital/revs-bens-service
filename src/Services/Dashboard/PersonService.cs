@@ -1,5 +1,6 @@
-﻿using System.Threading.Tasks;
-using StockportGovUK.AspNetCore.Gateways;
+﻿using System;
+using System.Threading.Tasks;
+using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
 
 namespace revs_bens_service.Services.Dashboard
 {
@@ -13,7 +14,14 @@ namespace revs_bens_service.Services.Dashboard
 
         public async Task<bool> IsBenefitsClaimant(string personReference)
         {
-            return await _gateway.IsBenefitsClaimant(personReference);
+            var response = await _gateway.IsBenefitsClaimant(personReference);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return bool.Parse(await response.Content.ReadAsStringAsync());
+            }
+
+            throw new Exception($"IsBenefistClaimant({personReference}) failed with status code: {response.StatusCode}");
         }
     }
 }
