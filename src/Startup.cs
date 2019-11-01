@@ -31,7 +31,11 @@ namespace revs_bens_service
             services.AddSingleton<IPersonService, PersonService>();
             services.AddSingleton<ICivicaServiceGateway, CivicaServiceGateway>();
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services
+                .AddMvc()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+                .AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
             services.AddAvailability();
             services.AddResilientHttpClients<IGateway, Gateway>(Configuration);
             services.AddHealthChecks()
