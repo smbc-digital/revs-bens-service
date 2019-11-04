@@ -13,6 +13,7 @@ using StockportGovUK.AspNetCore.Availability.Middleware;
 using StockportGovUK.AspNetCore.Gateways;
 using Swashbuckle.AspNetCore.Swagger;
 using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
+using revs_bens_service.Services;
 
 namespace revs_bens_service
 {
@@ -30,6 +31,7 @@ namespace revs_bens_service
         {
             services.AddSingleton<IPersonService, PersonService>();
             services.AddSingleton<ICivicaServiceGateway, CivicaServiceGateway>();
+            services.AddSingleton<ICouncilTaxService, CouncilTaxService>();
 
             services
                 .AddMvc()
