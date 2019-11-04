@@ -1,8 +1,5 @@
-using System.Threading.Tasks;
-using revs_bens_service.Utils.Toggles;
 using Microsoft.AspNetCore.Mvc;
 using StockportGovUK.AspNetCore.Attributes.TokenAuthentication;
-using StockportGovUK.AspNetCore.Availability.Attributes;
 using StockportGovUK.AspNetCore.Availability.Managers;
 
 namespace revs_bens_service.Controllers
