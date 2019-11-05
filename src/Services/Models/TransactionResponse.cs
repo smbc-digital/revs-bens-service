@@ -35,6 +35,7 @@ namespace revs_bens_service.Services.Models
     {
         public Date Date { get; set; }
         public string Amount { get; set; }
+        public decimal DAmount => decimal.Parse(Amount.Trim());
         public string Claim { get; set; }
         public Period Period { get; set; }
         public PlaceDetail PlaceDetail { get; set; }

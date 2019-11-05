@@ -4,6 +4,7 @@ using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
+using System.Linq;
 
 namespace revs_bens_service.Services
 {
@@ -19,20 +20,52 @@ namespace revs_bens_service.Services
         public async Task<IEnumerable<TransactionModel>> GetAllTransactionsForYear(string personReference, string accountReference, int year)
         {
             var response = await _gateway.GetAllTransactionsForYear(personReference, accountReference, year);
-            var transactions = response.Parse<TransactionResponse>();
+            var transactions = response.Parse<TransactionResponse>().ResponseContent.Transaction;
 
-            var transactionResponse = new List<TransactionModel>();
-
-            transactions.ResponseContent.Transaction.ForEach(_ => transactionResponse.Add(new TransactionModel
+            return transactions.Select(transaction => new TransactionModel
             {
-                Date = DateTime.Parse(_.Date.Text),
-                Amount = decimal.Parse(_.Amount.Trim()),
-                Method = Convert(_.SubCode),
-                Type = decimal.Parse(_.Amount.Trim()) > 0 ? "Credit" : "Debit",
-                Description = GetDescription(_.TranType, Convert(_.SubCode), _.PlaceDetail?.PostCode)
-            }));
+                Date = DateTime.Parse(transaction.Date.Text),
+                Amount = Math.Abs(transaction.DAmount),
+                Method = Convert(transaction.SubCode),
+                Type = IsCredit(transaction.DAmount, transaction.TranType) ? "Credit" : "Debit",
+                Description = GetDescription(transaction.TranType, Convert(transaction.SubCode), transaction.PlaceDetail?.PostCode)
+            }).Distinct();
+        }
 
-            return transactionResponse;
+        private bool IsCredit(decimal amount, string type)
+        {
+            if (_types.Contains(type.ToLower()))
+            {
+                amount *= -1;
+            }
+
+            return amount > 0;
+        }
+
+        private string GetDescription(string transactionType, string method, string postcode)
+        {
+            if (PropertyBasedTranTypes.Contains(transactionType.ToLower()))
+            {
+                return $"{Mappings[transactionType.ToUpper()]} - {postcode}";
+            }
+
+            if (transactionType.Equals("Payments", StringComparison.CurrentCultureIgnoreCase))
+            {
+                return $"Payment - {method}";
+            }
+
+            return Mappings.ContainsKey(transactionType)
+                ? Mappings[transactionType]
+                : "Other";
+        }
+
+        private string Convert(string paymentMethod)
+        {
+            if (!string.IsNullOrEmpty(paymentMethod) && _paymentMethod.ContainsKey(paymentMethod))
+            {
+                return _paymentMethod[paymentMethod];
+            }
+            return "Unknown";
         }
 
         private static readonly Dictionary<string, string> Mappings = new Dictionary<string, string>()
@@ -68,69 +101,30 @@ namespace revs_bens_service.Services
             "disabled"
         };
 
-        private string GetDescription(string transactionType, string method, string postcode)
-        {
-            if (PropertyBasedTranTypes.Contains(transactionType.ToLower()))
-            {
-                return $"{Mappings[transactionType.ToUpper()]} - {postcode}";
-            }
+        private static readonly HashSet<string> _types = new HashSet<string> {
+            "discount",
+            "exemption",
+            "disabled",
+            "costs",
+            "disregard"
+        };
 
-            if (transactionType.Equals("Payments", StringComparison.CurrentCultureIgnoreCase))
-            {
-                return $"Payment - {method}";
-            }
+        private static readonly Dictionary<string, string> _paymentMethod = new Dictionary<string, string>() {
 
-            return Mappings.ContainsKey(transactionType)
-                ? Mappings[transactionType]
-                : "Other";
-        }
-
-        private string Convert(string paymentMethod)
-        {
-            if (string.IsNullOrEmpty(paymentMethod))
-            {
-                return "Unknown";
-            }
-
-            switch (paymentMethod.Trim().ToUpper())
-            {
-                case "CASH":
-                case "PP":
-                    return "Cash";
-
-                case "CCARD":
-                case "DCARD":
-                    return "DebitCreditCard";
-
-                case "POCH":
-                    return "Cheque";
-
-                case "D/D CASH":
-                case "DIRECTDEBIT":
-                    return "DirectDebit";
-
-                case "S/O":
-                case "POTHER":
-                    return "StandingOrder";
-
-                case "DISCOUNT":
-                    return "Discount";
-
-                case "SUSPENSE":
-                    return "Suspense";
-
-                case "TRANSFER":
-                    return "Transfer";
-
-                case "OTHER":
-                    return "Other";
-
-                case "BAILIF":
-                    return "Bailiff";
-
-                default:
-                    return "Unknown";
-            }
-        }
+            {"CASH", "Cash" },
+            {"PP", "Cash"},
+            {"CCARD","DebitCreditCard" },
+            {"DCARD","DebitCreditCard" },
+            {"POCH","Cheque" },
+            {"D/D CASH","DirectDebit" },
+            {"DIRECTDEBIT","DirectDebit" },
+            {"S/O","StandingOrder" },
+            {"POTHER","StandingOrder" },
+            {"DISCOUNT","Discount" },
+            {"SUSPENSE","Suspense" },
+            {"TRANSFER","Transfer" },
+            {"OTHER","Other" },
+            {"BAILIF","Bailif" },
+        };
     }
 }
