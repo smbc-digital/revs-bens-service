@@ -1,11 +1,9 @@
 ﻿using System.Threading.Tasks;
-using Amazon.Runtime.Internal.Util;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.Owin.Logging;
-using revs_bens_service.Services.Benefits;
+using Microsoft.Extensions.Logging;
+using revs_bens_service.Services.BenefitsService;
 using StockportGovUK.AspNetCore.Attributes.TokenAuthentication;
-using ILogger = Microsoft.Owin.Logging.ILogger;
 
 namespace revs_bens_service.Controllers
 {
@@ -28,19 +26,12 @@ namespace revs_bens_service.Controllers
 
 
         [HttpGet]
-        [Route("benefits-details{personReference}")]
-        public Task<IActionResult> GetBenefitDetails (string personReference)
+        [Route("benefits/{personReference}/details")]
+        public async Task<IActionResult> GetBenefitDetails (string personReference)
         {
-            if (!ModelState.IsValid)
-            {
-                _logger.WriteWarning("");
+            var model = await _benefitsService.GetBenefitDetails(personReference);
 
-                return BadRequest(ModelState);
-            }
-
-            var model = await _benefitsService.BenefitDetails();
-
-            Return Ok();
+            return StatusCode(StatusCodes.Status200OK, model);
         }
     }
 }
