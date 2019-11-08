@@ -17,12 +17,12 @@ namespace revs_bens_service.Services
             _gateway = gateway;
         }
 
-        public async Task<IEnumerable<TransactionModel>> GetAllTransactionsForYear(string personReference, string accountReference, int year)
+        public async Task<IEnumerable<TransactionModelExtension>> GetAllTransactionsForYear(string personReference, string accountReference, int year)
         {
             var response = await _gateway.GetAllTransactionsForYear(personReference, accountReference, year);
             var transactions = response.Parse<TransactionResponse>().ResponseContent.Transaction;
 
-            return transactions.Select(transaction => new TransactionModel
+            return transactions.Select(transaction => new TransactionModelExtension
             {
                 Date = DateTime.Parse(transaction.Date.Text),
                 Amount = Math.Abs(transaction.DAmount),

@@ -1,19 +1,9 @@
-﻿using System;
+﻿using StockportGovUK.NetStandard.Models.Models.RevsAndBens;
 
 namespace revs_bens_service.Services.Models
 {
-    public class TransactionModel
+    public class TransactionModelExtension : TransactionModel
     {
-        public DateTime Date { get; set; }
-
-        public decimal Amount { get; set; }
-
-        public string Method { get; set; }
-
-        public string Description { get; set; }
-
-        public string Type { get; set; }
-
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))

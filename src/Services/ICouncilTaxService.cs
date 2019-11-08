@@ -6,6 +6,6 @@ namespace revs_bens_service.Services
 {
     public interface ICouncilTaxService
     {
-        Task<IEnumerable<TransactionModel>> GetAllTransactionsForYear(string personReference, string accountReference, int year);
+        Task<IEnumerable<TransactionModelExtension>> GetAllTransactionsForYear(string personReference, string accountReference, int year);
     }
 }
