@@ -2,7 +2,7 @@
 
 namespace revs_bens_service.Services.Dashboard
 {
-    public interface IPersonService
+    public interface IPeopleService
     {
         Task<bool> IsBenefitsClaimant(string personReference);
     }
