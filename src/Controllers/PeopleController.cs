@@ -20,7 +20,7 @@ namespace revs_bens_service.Controllers
         }
 
         [HttpGet]
-        [Route("{personReference}/benefits-claimant")]
+        [Route("{personReference}/is-benefits-claimant")]
         public async Task<IActionResult> IsBenefitsClaimant([FromRoute][Required]string personReference)
         {
             var model = await _personService.IsBenefitsClaimant(personReference);
