@@ -5,10 +5,10 @@ using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
 
 namespace revs_bens_service.Services.Dashboard
 {
-    public class PersonService : IPersonService
+    public class PeopleService : IPeopleService
     {
         private readonly ICivicaServiceGateway _gateway;
-        public PersonService(ICivicaServiceGateway gateway)
+        public PeopleService(ICivicaServiceGateway gateway)
         {
             _gateway = gateway;
         }
