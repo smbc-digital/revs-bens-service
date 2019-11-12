@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System;
 using System.Linq;
 
-namespace revs_bens_service.Services
+namespace revs_bens_service.Services.CouncilTax
 {
     public class CouncilTaxService : ICouncilTaxService
     {

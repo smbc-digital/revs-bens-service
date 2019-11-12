@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using revs_bens_service.Services.CouncilTax;
 using revs_bens_service.Services.Dashboard;
 using StockportGovUK.AspNetCore.Attributes.TokenAuthentication;
 
@@ -14,9 +15,11 @@ namespace revs_bens_service.Controllers
     public class PeopleController : ControllerBase
     {
         private readonly IPeopleService _peopleService;
-        public PeopleController(IPeopleService peopleService)
+        private readonly ICouncilTaxService _councilTaxService;
+        public PeopleController(IPeopleService peopleService, ICouncilTaxService councilTaxService)
         {
             _peopleService = peopleService;
+            _councilTaxService = councilTaxService;
         }
 
         [HttpGet]
@@ -26,6 +29,15 @@ namespace revs_bens_service.Controllers
             var model = await _peopleService.IsBenefitsClaimant(personReference);
 
             return StatusCode(StatusCodes.Status200OK, model);
+        }
+
+        [HttpGet]
+        [Route("{personReference}/details/{accountReference}/transactions/{year}")]
+
+        public async Task<IActionResult> GetAllTransactionsForYear([FromRoute][Required]string personReference, [FromRoute][Required]string accountReference, [FromRoute][Required] int year)
+        {
+            var model = await _councilTaxService.GetAllTransactionsForYear(personReference, accountReference, year);
+            return Ok(model);
         }
     }
 }

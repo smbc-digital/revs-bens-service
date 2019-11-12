@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace revs_bens_service.Services
+namespace revs_bens_service.Services.CouncilTax
 {
     public interface ICouncilTaxService
     {

@@ -31,7 +31,6 @@ namespace revs_bens_service
         {
             services.AddSingleton<IPeopleService, PeopleService>();
             services.AddSingleton<ICivicaServiceGateway, CivicaServiceGateway>();
-            services.AddSingleton<ICouncilTaxService, CouncilTaxService>();
 
             services
                 .AddMvc()
