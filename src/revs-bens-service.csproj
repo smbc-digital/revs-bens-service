@@ -26,14 +26,6 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="4.0.1" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
   </ItemGroup>
-  <ItemGroup>
-    <Reference Include="StockportGovUK.AspNetCore.Gateways">
-      <HintPath>C:\code\StockportGovUK.AspNetCore.Gateways\bin\Debug\netcoreapp2.2\StockportGovUK.AspNetCore.Gateways.dll</HintPath>
-    </Reference>
-    <Reference Include="StockportGovUK.NetStandard.Models">
-      <HintPath>..\..\code\StockportGovUk.NetStandard.Models\bin\Debug\netcoreapp2.2\StockportGovUK.NetStandard.Models.dll</HintPath>
-    </Reference>
-  </ItemGroup>
 
   <PropertyGroup>
     <PackageLicenseFile>License.txt</PackageLicenseFile>
@@ -41,5 +33,13 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="License.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="StockportGovUK.AspNetCore.Gateways">
+      <HintPath>..\..\..\other\StockportGovUK.AspNetCore.Gateways\bin\Debug\netcoreapp2.2\StockportGovUK.AspNetCore.Gateways.dll</HintPath>
+    </Reference>
+    <Reference Include="StockportGovUK.NetStandard.Models">
+      <HintPath>..\..\..\other\StockportGovUk.NetStandard.Models\bin\Debug\netcoreapp2.2\StockportGovUK.NetStandard.Models.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

@@ -4,7 +4,9 @@ using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
+using System.Dynamic;
 using System.Linq;
+using StockportGovUK.NetStandard.Models.Models.Civica.CouncilTax;
 
 namespace revs_bens_service.Services.CouncilTax
 {
@@ -17,24 +19,95 @@ namespace revs_bens_service.Services.CouncilTax
             _gateway = gateway;
         }
 
-        public async Task<IEnumerable<TransactionModelExtension>> GetAllTransactionsForYear(string personReference, string accountReference, int year)
+        // TODO:: convert GetPaymentSchedule to take year as an int and not a string #consistency 
+        /**
+         *  return: dynamic object with structure
+         *          {
+         *               Transactions: 
+         *               Accounts: 
+         *               Payments: 
+         *               Documents: 
+         *               HasBenefits: 
+         *          }
+         */
+        public CouncilTaxDetailsModel GetCouncilTaxDetails(string personReference, string accountReference, int year)
         {
-            var response = await _gateway.GetAllTransactionsForYear(personReference, accountReference, year);
-            var transactions = response.Parse<TransactionResponse>().ResponseContent.Transaction;
+            dynamic model = new ExpandoObject();
 
-            return transactions.Select(transaction => new TransactionModelExtension
+            Task.WaitAll(
+                Task.Run(async () =>
+                {
+                    var response = await _gateway.GetAllTransactionsForYear(personReference, accountReference, year);
+                    var transactions = response.Parse<TransactionResponse>().ResponseContent.Transaction;
+                    ParseTransactions(ref model, transactions);
+                }), 
+                Task.Run(async () =>
+                {
+                    var response = await _gateway.GetAccount(personReference, accountReference);
+                    var account = response.Parse<CouncilTaxAccountResponse>().ResponseContent;
+                    ParseAccount(ref model, account);
+                }), 
+                Task.Run(async () =>
+                {
+                    var response = await _gateway.GetAccounts(personReference);
+                    model.Accounts = response.Parse<IEnumerable<CtaxActDetails>>().ResponseContent;
+                }), 
+                Task.Run(async () =>
+                {
+                    var response = await _gateway.GetPaymentSchedule(personReference, year.ToString());
+                    var payments = response.Parse<CouncilTaxPaymentScheduleResponse>().ResponseContent;
+                    ParsePayments(ref model, payments.InstalmentList);
+                }), 
+                Task.Run(async () =>
+                {
+                    var response = await _gateway.GetCurrentProperty(personReference);
+                    model.Property = response.Parse<Places>().ResponseContent;
+                }), 
+                Task.Run(async () =>
+                {
+                    var response = await _gateway.GetDocumentsWithAccountReference(personReference, accountReference);
+                    model.Documents = response.Parse<List<CouncilTaxDocumentReference>>().ResponseContent;
+                }), 
+                Task.Run(async () =>
+                {
+                    var response = await _gateway.IsBenefitsClaimant(personReference);
+                    model.HasBenefits = response.Parse<bool>().ResponseContent;
+                })
+            );
+
+            return GenerateCouncilTaxDetailsModel(model);
+        }
+
+        #region Transaction Based Methods
+
+        private void ParsePayments(ref dynamic model, List<Instalment> instalments)
+        {
+            model.UpcomingPayments = instalments.Select(_ => new InstallmentModel
+            {
+                Amount = _.AmountDue,
+                Date = DateTime.Parse(_.DateDue),
+                IsDirectDebit = bool.Parse(_.IsDirectDebit)
+            });
+        }
+
+        private void ParseTransactions(ref dynamic model, IEnumerable<Transaction> transactions)
+        {
+            var parsedTransactions = transactions.Select(transaction => new TransactionModelExtension
             {
                 Date = DateTime.Parse(transaction.Date.Text),
                 Amount = Math.Abs(transaction.DAmount),
                 Method = Convert(transaction.SubCode),
                 Type = IsCredit(transaction.DAmount, transaction.TranType) ? "Credit" : "Debit",
                 Description = GetDescription(transaction.TranType, Convert(transaction.SubCode), transaction.PlaceDetail?.PostCode)
-            }).Distinct();
+            }).Distinct().ToArray();
+
+            model.TransactionHistory = parsedTransactions.Where(t => t.Type != "Charge" && t.Type != "REFUNDS" && t.Type != "PAYMENTS");
+            model.PaymentTransactions = parsedTransactions.Where(t => t.Type == "PAYMENTS" || t.Type == "REFUNDS");
         }
 
         private bool IsCredit(decimal amount, string type)
         {
-            if (_types.Contains(type.ToLower()))
+            if (Types.Contains(type.ToLower()))
             {
                 amount *= -1;
             }
@@ -61,9 +134,9 @@ namespace revs_bens_service.Services.CouncilTax
 
         private string Convert(string paymentMethod)
         {
-            if (!string.IsNullOrEmpty(paymentMethod) && _paymentMethod.ContainsKey(paymentMethod))
+            if (!string.IsNullOrEmpty(paymentMethod) && PaymentMethod.ContainsKey(paymentMethod))
             {
-                return _paymentMethod[paymentMethod];
+                return PaymentMethod[paymentMethod];
             }
             return "Unknown";
         }
@@ -101,7 +174,7 @@ namespace revs_bens_service.Services.CouncilTax
             "disabled"
         };
 
-        private static readonly HashSet<string> _types = new HashSet<string> {
+        private static readonly HashSet<string> Types = new HashSet<string> {
             "discount",
             "exemption",
             "disabled",
@@ -109,7 +182,7 @@ namespace revs_bens_service.Services.CouncilTax
             "disregard"
         };
 
-        private static readonly Dictionary<string, string> _paymentMethod = new Dictionary<string, string>() {
+        private static readonly Dictionary<string, string> PaymentMethod = new Dictionary<string, string>() {
 
             {"CASH", "Cash" },
             {"PP", "Cash"},
@@ -126,5 +199,57 @@ namespace revs_bens_service.Services.CouncilTax
             {"OTHER","Other" },
             {"BAILIF","Bailif" },
         };
+        #endregion
+
+        #region Account Based Methods
+        private static readonly HashSet<string> ValidAccountStages = new HashSet<string> { "BIL", "RM1", "RM2" };
+
+        private void ParseAccount(ref dynamic model, CouncilTaxAccountResponse account)
+        {
+            model.PaymentMethod = account.AccountDetails.ActPayGrp.PaymentMethod.Contains("DD") ? "Direct Debit" : string.Empty;
+            model.IsDirectDebitCustomer = account.AccountDetails.ActPayGrp.IsDirectDebit();
+            model.AmountOwing = account.CouncilTaxAccountBalance;
+            model.YearTotals = account.FinancialDetails.YearTotals;
+            model.Reference = account.CouncilTaxAccountReference;
+            model.PaymentSummary = account.FinancialDetails
+                                       .YearTotals?
+                                       .FirstOrDefault()?
+                                       .YearSummaries?
+                                       .FirstOrDefault()?
+                                       .NextPayment ?? new PaymentSummaryResponse();
+            model.AccountName = account.AccountDetails.BankDetails.AccountName;
+            model.AccountNumber = account.AccountDetails.BankDetails.AccountNumber;
+            model.IsFinalNotice = account.FinancialDetails.YearTotals?.FirstOrDefault()?.YearSummaries.Any(x => !ValidAccountStages.Contains(x.Stage.StageCode));
+            model.IsClosed = account.CtxActClosed == "TRUE";
+        }
+
+        #endregion
+
+        #region Parsing To CouncilTaxDetailsModel
+
+        private CouncilTaxDetailsModel GenerateCouncilTaxDetailsModel(dynamic model)
+        {
+
+            return new CouncilTaxDetailsModel
+            {
+                PaymentMethod = model.PaymentMethod,
+                IsDirectDebitCustomer = model.IsDirectDebitCustomer,
+                AmountOwing = model.AmountOwing,
+                YearTotals = model.YearTotals,
+                Reference = model.Reference,
+                PaymentSummary = model.PaymentSummary,
+                IsFinalNotice = model.IsFinalNotice,
+                IsClosed = model.IsClosed,
+                AccountNumber = model.AccountNumber,
+                AccountName = model.AccountName,
+                LiabilityPeriodStart = model.Property?.LiabilityPeriodStart,
+                LiabilityPeriodEnd = model.Property?.LiabilityPeriodStart,
+                UpcomingPayments = model.UpcomingPayments,
+                TransactionHistory = model.TransactionsHistory,
+                PreviousPayments = model.PreviousTransactions
+            };
+        }
+
+        #endregion
     }
 }

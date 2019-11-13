@@ -32,11 +32,14 @@ namespace revs_bens_service.Controllers
         }
 
         [HttpGet]
-        [Route("{personReference}/details/{accountReference}/transactions/{year}")]
-
-        public async Task<IActionResult> GetAllTransactionsForYear([FromRoute][Required]string personReference, [FromRoute][Required]string accountReference, [FromRoute][Required] int year)
+        [Route("{personReference}/council-tax/{accountReference}/{year}")]
+        public IActionResult GetCouncilTaxDetails(
+            [FromRoute][Required]string personReference, 
+            [FromRoute][Required]string accountReference, 
+            [FromRoute][Required]int year)
         {
-            var model = await _councilTaxService.GetAllTransactionsForYear(personReference, accountReference, year);
+            var model = _councilTaxService.GetCouncilTaxDetails(personReference, accountReference, year);
+
             return Ok(model);
         }
     }
