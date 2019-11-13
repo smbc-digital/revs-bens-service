@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using revs_bens_service.Services.Dashboard;
+using revs_bens_service.Utils.StorageProvider;
 using StockportGovUK.AspNetCore.Middleware;
 using StockportGovUK.AspNetCore.Availability;
 using StockportGovUK.AspNetCore.Availability.Middleware;
@@ -30,6 +31,7 @@ namespace revs_bens_service
         {
             services.AddSingleton<IPersonService, PersonService>();
             services.AddSingleton<ICivicaServiceGateway, CivicaServiceGateway>();
+            services.AddStorageProvider(Configuration);
 
             services
                 .AddMvc()
