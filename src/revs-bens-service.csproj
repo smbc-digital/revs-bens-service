@@ -30,7 +30,7 @@
 
   <ItemGroup>
     <Reference Include="StockportGovUK.AspNetCore.Gateways">
-      <HintPath>C:\code\StockportGovUK.AspNetCore.Gateways\bin\Debug\netcoreapp2.2\StockportGovUK.AspNetCore.Gateways.dll</HintPath>
+      <HintPath>C:\code\libraries\StockportGovUK.AspNetCore.Gateways\bin\Debug\netcoreapp2.2\StockportGovUK.AspNetCore.Gateways.dll</HintPath>
     </Reference>
   </ItemGroup>
 
