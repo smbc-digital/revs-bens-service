@@ -36,7 +36,7 @@ namespace revs_bens_service.Controllers
         [Route("{personReference}/benefits")]
         public async Task<IActionResult> GetBenefits(string personReference)
         {
-            var model = await _benefitsService.GetBenefits(personReference);
+            var model = await _benefitsService.GetBenefitsDetails(personReference);
 
             return StatusCode(StatusCodes.Status200OK, model);
         }

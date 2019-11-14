@@ -19,7 +19,7 @@ namespace revs_bens_service.Services.HousingBenefits
             _civicaServiceGateway = civicaServiceGateway;
         }
 
-        public async Task<List<Benefits>> GetBenefits(string personReference)
+        public async Task<Benefits> GetBenefitsDetails(string personReference)
         {
             var benefitClaims = new List<Benefits>();
             var benefitsResponse = await _civicaServiceGateway.GetBenefits(personReference);
@@ -37,7 +37,7 @@ namespace revs_bens_service.Services.HousingBenefits
                     }),
                     Task.Run(async () =>
                     {
-                        var response = await _civicaServiceGateway.GetDocumentsList(personReference);
+                        var response = await _civicaServiceGateway.GetDocuments(personReference);
                         model.Documents = response.Parse<List<Document>>().ResponseContent;
                     }),
                     Task.Run(async () =>
@@ -47,7 +47,7 @@ namespace revs_bens_service.Services.HousingBenefits
                     }),
                     Task.Run(async() =>
                     {
-                        var response = await _civicaServiceGateway.GetCtaxbenefitPaymentHistory(personReference);
+                        var response = await _civicaServiceGateway.GetCtaxBenefitPaymentHistory(personReference);
                         var content = response.Parse<List<CtaxBenefitsPaymentDetail>>().ResponseContent;
                         model.CouncilTaxPaymentPaymentHistory = content;
                         model.CouncilTaxCurrentSummary = BuildCouncilTaxSupportSummary(personReference, content);
@@ -57,7 +57,7 @@ namespace revs_bens_service.Services.HousingBenefits
                 benefitClaims.Add(model);
             }
 
-            return benefitClaims;
+            return benefitClaims.FirstOrDefault(_ => _.ClaimStatus == "Current");
         }
 
         private static string ParseStatusCode(string statusCode)
@@ -97,7 +97,7 @@ namespace revs_bens_service.Services.HousingBenefits
         }
 
         // TODO: WTF IS THIS!?!?!?!
-        private CtaxBenefitsSummary BuildCouncilTaxSupportSummary(string personReference, IEnumerable<CtaxBenefitsPaymentDetail> councilTaxSupportPayments)
+        private async Task<CtaxBenefitsSummary> BuildCouncilTaxSupportSummary(string personReference, IEnumerable<CtaxBenefitsPaymentDetail> councilTaxSupportPayments)
         {
             var currentTaxYear = ToFinancialYear(DateTime.Now);
 
@@ -114,14 +114,15 @@ namespace revs_bens_service.Services.HousingBenefits
                 AccountReference = accountReference,
             };
 
-            var ctaxSummaryResponse = _civicaServiceGateway.GetAccountDetailsForYear(personReference, accountReference, currentTaxYear);
+            var ctaxSummaryResponse = await _civicaServiceGateway.GetAccountDetailsForYear(personReference, accountReference, currentTaxYear);
+            var ctaxSummary = ctaxSummaryResponse.Parse<CouncilTaxSummaryResponse>().ResponseContent;
 
-            if (ctaxSummaryResponse.FinancialDetails == null || ctaxSummaryResponse.FinancialDetails.RecYrTotals == null)
+            if (ctaxSummary.FinancialDetails == null || ctaxSummary.FinancialDetails.RecYrTotals == null)
             {
                 return ctaxBenefitsSummaryEntity;
             }
 
-            var yearTotal = ctaxSummaryResponse.FinancialDetails.RecYrTotals;
+            var yearTotal = ctaxSummary.FinancialDetails.RecYrTotals;
             ctaxBenefitsSummaryEntity.TotalBill = yearTotal.TotalCharge == null ? "0.00" : yearTotal.TotalCharge.Trim();
             ctaxBenefitsSummaryEntity.TotalPayments = yearTotal.TotalPayments == null ? "0.00" : yearTotal.TotalPayments.Trim();
             ctaxBenefitsSummaryEntity.TotalBenefits = yearTotal.TotalBenefits == null ? "0.00" : yearTotal.TotalBenefits.Trim();
