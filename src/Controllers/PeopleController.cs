@@ -12,14 +12,14 @@ namespace revs_bens_service.Controllers
     [Route("api/v1/[Controller]")]
     [ApiController]
     [TokenAuthentication]
-    public class PersonController : ControllerBase
+    public class PeopleController : ControllerBase
     {
-        private readonly IPersonService _personService;
+        private readonly IPeopleService _peopleService;
         private readonly IBenefitsService _benefitsService;
 
-        public PersonController(IPersonService personService, IBenefitsService benefitsService)
+        public PeopleController(IPeopleService peopleService, IBenefitsService benefitsService)
         {
-            _personService = personService;
+            _peopleService = peopleService;
             _benefitsService = benefitsService;
         }
 
@@ -27,7 +27,7 @@ namespace revs_bens_service.Controllers
         [Route("{personReference}/is-benefits-claimant")]
         public async Task<IActionResult> IsBenefitsClaimant([FromRoute][Required]string personReference)
         {
-            var model = await _personService.IsBenefitsClaimant(personReference);
+            var model = await _peopleService.IsBenefitsClaimant(personReference);
 
             return StatusCode(StatusCodes.Status200OK, model);
         }

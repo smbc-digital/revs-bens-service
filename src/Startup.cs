@@ -29,7 +29,7 @@ namespace revs_bens_service
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IPersonService, PersonService>();
+            services.AddSingleton<IPeopleService, PeopleService>();
             services.AddSingleton<ICivicaServiceGateway, CivicaServiceGateway>();
             services.AddStorageProvider(Configuration);
 
