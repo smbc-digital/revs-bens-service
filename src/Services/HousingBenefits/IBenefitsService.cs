@@ -5,6 +5,6 @@ namespace revs_bens_service.Services.HousingBenefits
 {
     public interface IBenefitsService
     {
-        Task<Benefits> GetBenefitsDetails(string personReference);
+        Task<dynamic> GetBenefitsDetails(string personReference);
     }
 }

@@ -1,4 +1,6 @@
 using System.Linq;
+using revs_bens_service.Services.Models;
+using static revs_bens_service.Services.HousingBenefits.BenefitsService;
 
 namespace revs_bens_service.Services.HousingBenefits.Models
 {
@@ -30,6 +32,10 @@ namespace revs_bens_service.Services.HousingBenefits.Models
         public string ClaimPostcode { get; set; }
 
         public NextPaymentModel NextPayment { get; set; }
+
+        public BenefitEntitlementResponse BenefitEntitlement { get; set; }
+
+        public BenefitsCombinationEnum BenefitsCombination { get; set; }
 
         private string ParseStatusCode(string statusCode)
         {
@@ -64,22 +70,5 @@ namespace revs_bens_service.Services.HousingBenefits.Models
         public string PaymentMethod { get; set; }
 
         public string PaymentSchedule { get; set; }
-
-        public int PaymentFrequencyInWeeks => ParsePaymentFrequency(PaymentSchedule);
-
-        private int ParsePaymentFrequency(string paymentSchedule)
-        {
-            switch (paymentSchedule.ToLower())
-            {
-                case "weekly":
-                    return 1;
-                case "fortnightly":
-                    return 2;
-                case "four weekly":
-                    return 4;
-                default:
-                    return 0;
-            }
-        }
     }
 }

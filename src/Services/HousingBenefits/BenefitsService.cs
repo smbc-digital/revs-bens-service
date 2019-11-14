@@ -19,45 +19,51 @@ namespace revs_bens_service.Services.HousingBenefits
             _civicaServiceGateway = civicaServiceGateway;
         }
 
-        public async Task<Benefits> GetBenefitsDetails(string personReference)
+        public async Task<dynamic> GetBenefitsDetails(string personReference)
         {
-            var benefitClaims = new List<Benefits>();
+            var benefitClaims = new List<dynamic>();
             var benefitsResponse = await _civicaServiceGateway.GetBenefits(personReference);
             var benefitsDetails = benefitsResponse.Parse<ClaimsSummaryResponse>().ResponseContent;
 
-            foreach (var claim in benefitsDetails.ClaimsList.ClaimSummary)
+            if (benefitsDetails.Claims == null)
+            {
+                return null;
+            }
+
+            foreach (var claim in benefitsDetails.Claims.Summary)
             {
                 dynamic model = new ExpandoObject();
 
-                Task.WaitAll(
-                    Task.Run(async () =>
-                    {
-                        var response = await _civicaServiceGateway.GetBenefitDetails(personReference, claim.ClaimNumber, claim.ClaimPlaceRef);
-                        model.ClaimDetails = response.Parse<ClaimDetails>().ResponseContent;
-                    }),
-                    Task.Run(async () =>
-                    {
-                        var response = await _civicaServiceGateway.GetDocuments(personReference);
-                        model.Documents = response.Parse<List<Document>>().ResponseContent;
-                    }),
-                    Task.Run(async () =>
-                    {
-                        var response = await _civicaServiceGateway.GetHousingBenefitPaymentHistory(personReference);
-                        model.HousingPaymentsHistory = response.Parse<List<HousingBenefitsPaymentDetail>>().ResponseContent;
-                    }),
-                    Task.Run(async() =>
-                    {
-                        var response = await _civicaServiceGateway.GetCtaxBenefitPaymentHistory(personReference);
-                        var content = response.Parse<List<CtaxBenefitsPaymentDetail>>().ResponseContent;
-                        model.CouncilTaxPaymentPaymentHistory = content;
-                        model.CouncilTaxCurrentSummary = BuildCouncilTaxSupportSummary(personReference, content);
-                    })
+                var response = await _civicaServiceGateway.GetBenefitDetails(personReference, claim.Number, claim.PlaceRef);
+                var t = await response.Content.ReadAsStringAsync();
+                var u = response.Parse<ClaimDetails>().ResponseContent;
+                model.ClaimDetails = response.Parse<ClaimDetails>().ResponseContent;
+                model.ClaimDetails.NextPayment.PaymentSchedule = SetPaymentStatus(
+                    model.ClaimDetails.NextPayment.Amount,
+                    model.ClaimDetails.BenefitEntitlement,
+                    model.ClaimDetails.NextPayment.PaymentSchedule
                 );
+                model.ClaimDetails.BenefitsCombination = SetBenefitsCombination(
+                    model.ClaimDetails.BenefitEntitlement,
+                    model.ClaimDetails.ClaimStatus
+                );
+
+                var documents = await _civicaServiceGateway.GetDocuments(personReference);
+                model.Documents = response.Parse<List<Document>>().ResponseContent;
+
+                var housingPaymentHistory = await _civicaServiceGateway.GetHousingBenefitPaymentHistory(personReference);
+                model.HousingPaymentsHistory = response.Parse<dynamic>().ResponseContent;
+
+                var ctaxPaymentHistory = await _civicaServiceGateway.GetCtaxBenefitPaymentHistory(personReference);
+                var content = response.Parse<dynamic>().ResponseContent;
+                model.CouncilTaxPaymentPaymentHistory = content;
+                model.CouncilTaxCurrentSummary = BuildCouncilTaxSupportSummary(personReference, content.PaymentList.PaymentDetails);
+
 
                 benefitClaims.Add(model);
             }
 
-            return benefitClaims.FirstOrDefault(_ => _.ClaimStatus == "Current");
+            return benefitClaims.FirstOrDefault(_ => _.ClaimDetails.ClaimStatus == "Current");
         }
 
         private static string ParseStatusCode(string statusCode)
@@ -101,12 +107,13 @@ namespace revs_bens_service.Services.HousingBenefits
         {
             var currentTaxYear = ToFinancialYear(DateTime.Now);
 
-            var currentYearPayments =
-                councilTaxSupportPayments
+            var currentYearPayments = councilTaxSupportPayments
                     .Where(_ => ToFinancialYear(DateTime.Parse(_.PeriodStart)) == currentTaxYear)
                     .ToList();
 
-            var accountReference = currentYearPayments.FirstOrDefault() != null ? currentYearPayments.First().CouncilTaxReference : "N/a";
+            var accountReference = currentYearPayments.FirstOrDefault() != null
+                ? currentYearPayments.First().CouncilTaxReference
+                : "N/a";
 
             var ctaxBenefitsSummaryEntity = new CtaxBenefitsSummary
             {
@@ -124,23 +131,89 @@ namespace revs_bens_service.Services.HousingBenefits
 
             var yearTotal = ctaxSummary.FinancialDetails.RecYrTotals;
             ctaxBenefitsSummaryEntity.TotalBill = yearTotal.TotalCharge == null ? "0.00" : yearTotal.TotalCharge.Trim();
-            ctaxBenefitsSummaryEntity.TotalPayments = yearTotal.TotalPayments == null ? "0.00" : yearTotal.TotalPayments.Trim();
             ctaxBenefitsSummaryEntity.TotalBenefits = yearTotal.TotalBenefits == null ? "0.00" : yearTotal.TotalBenefits.Trim();
             ctaxBenefitsSummaryEntity.BalanceOutstanding = yearTotal.BalanceOutstanding == null ? "0.00" : yearTotal.BalanceOutstanding.Trim();
-
-            ctaxBenefitsSummaryEntity.BenefitsBreakdown =
-                currentYearPayments.Select(
-                    _ =>
-                        new CouncilTaxBenefitsPayment
-                        {
-                            Amount = _.PayAmount,
-                            PaymentDate = _.DatePaid,
-                            PaymentPeriod = string.Concat(_.PeriodStart, " to ", _.PeriodEnd)
-                        }).ToList();
 
             return ctaxBenefitsSummaryEntity;
         }
 
-        private int ToFinancialYear(DateTime date) => date.Month < 4 ? date.Year -1 : date.Year;
+        private int ToFinancialYear(DateTime date) => date.Month < 4 ? date.Year - 1 : date.Year;
+
+        private string SetPaymentStatus(string amount, BenefitEntitlementResponse benefitEntitlement, string paymentSchedule)
+        {
+            var weeks = 0;
+
+            switch (paymentSchedule.ToLower())
+            {
+                case "weekly":
+                    return "Expected";
+                case "fortnightly":
+                    weeks = 2;
+                    break;
+                case "four weekly":
+                    weeks = 4;
+                    break;
+                default:
+                    return "Expected";
+            }
+
+            var rentType = benefitEntitlement.PrivateRent ?? benefitEntitlement.CouncilRent;
+            var housingBenefit = rentType != null
+                ? rentType.WeeklyBenefit
+                : "0.00";
+
+            decimal nextPaymentAmount;
+            decimal.TryParse(amount, out nextPaymentAmount);
+
+            decimal expectedPayment;
+            decimal.TryParse(housingBenefit, out expectedPayment);
+
+            var actualPayment = nextPaymentAmount / weeks;
+
+            if (actualPayment == expectedPayment)
+            {
+                return "Expected";
+            }
+
+            return actualPayment < expectedPayment
+                ? "Reduced"
+                : "Increased";
+        }
+
+        private BenefitsCombinationEnum SetBenefitsCombination(BenefitEntitlementResponse benefitEntitlementResponse, string claimStatus)
+        {
+            var benefitsCombo = string.Empty;
+
+            var ctax = benefitEntitlementResponse.CouncilTax != null
+                ? benefitEntitlementResponse.CouncilTax.WeeklyBenefit
+                : "0.00";
+
+            var rentType = benefitEntitlementResponse.PrivateRent ?? benefitEntitlementResponse.CouncilRent;
+            var housingBenefit = rentType != null
+                ? rentType.WeeklyBenefit
+                : "0.00";
+
+            benefitsCombo += housingBenefit == "0.00" && claimStatus == "Current" ? string.Empty : "[HB]";
+            benefitsCombo += ctax == "0.00" ? string.Empty : "[CTS]";
+
+            switch (benefitsCombo)
+            {
+                case "[HB]":
+                    return BenefitsCombinationEnum.HousingBenefitOnly;
+                case "[CTS]":
+                    return BenefitsCombinationEnum.CouncilTaxSupportOnly;
+                case "[HB][CTS]":
+                    return BenefitsCombinationEnum.AllBenefits;
+                default:
+                    return BenefitsCombinationEnum.HousingBenefitOnly;
+            }
+        }
+
+        public enum BenefitsCombinationEnum
+        {
+            AllBenefits = 0,
+            HousingBenefitOnly = 1,
+            CouncilTaxSupportOnly = 2
+        }
     }
 }

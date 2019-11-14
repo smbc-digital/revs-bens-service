@@ -25,7 +25,7 @@ namespace revs_bens_service.Controllers
 
         [HttpGet]
         [Route("{personReference}/is-benefits-claimant")]
-        public async Task<IActionResult> IsBenefitsClaimant([FromRoute][Required]string personReference)
+        public async Task<IActionResult> IsBenefitsClaimant([FromRoute][Required] string personReference)
         {
             var model = await _peopleService.IsBenefitsClaimant(personReference);
 
@@ -34,7 +34,7 @@ namespace revs_bens_service.Controllers
 
         [HttpGet]
         [Route("{personReference}/benefits")]
-        public async Task<IActionResult> GetBenefits(string personReference)
+        public async Task<IActionResult> GetBenefits([FromRoute][Required] string personReference)
         {
             var model = await _benefitsService.GetBenefitsDetails(personReference);
 

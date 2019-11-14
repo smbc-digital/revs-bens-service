@@ -14,6 +14,7 @@ using StockportGovUK.AspNetCore.Availability.Middleware;
 using StockportGovUK.AspNetCore.Gateways;
 using Swashbuckle.AspNetCore.Swagger;
 using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
+using revs_bens_service.Services.HousingBenefits;
 
 namespace revs_bens_service
 {
@@ -30,6 +31,7 @@ namespace revs_bens_service
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IPeopleService, PeopleService>();
+            services.AddSingleton<IBenefitsService, BenefitsService>();
             services.AddSingleton<ICivicaServiceGateway, CivicaServiceGateway>();
             services.AddStorageProvider(Configuration);
 
