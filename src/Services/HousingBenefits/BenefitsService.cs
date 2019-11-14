@@ -52,12 +52,12 @@ namespace revs_bens_service.Services.HousingBenefits
                 model.Documents = response.Parse<List<Document>>().ResponseContent;
 
                 var housingPaymentHistory = await _civicaServiceGateway.GetHousingBenefitPaymentHistory(personReference);
-                model.HousingPaymentsHistory = response.Parse<dynamic>().ResponseContent;
+                model.HousingPaymentsHistory = response.Parse<List<HousingBenefitsPaymentDetail>>().ResponseContent;
 
                 var ctaxPaymentHistory = await _civicaServiceGateway.GetCtaxBenefitPaymentHistory(personReference);
-                var content = response.Parse<dynamic>().ResponseContent;
+                var content = response.Parse<List<CtaxBenefitsPaymentDetail>>().ResponseContent;
                 model.CouncilTaxPaymentPaymentHistory = content;
-                model.CouncilTaxCurrentSummary = BuildCouncilTaxSupportSummary(personReference, content.PaymentList.PaymentDetails);
+                model.CouncilTaxCurrentSummary = BuildCouncilTaxSupportSummary(personReference, content);
 
 
                 benefitClaims.Add(model);
