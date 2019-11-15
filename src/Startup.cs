@@ -14,6 +14,8 @@ using StockportGovUK.AspNetCore.Gateways;
 using Swashbuckle.AspNetCore.Swagger;
 using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
 using revs_bens_service.Services;
+using revs_bens_service.Services.CouncilTax;
+using revs_bens_service.Utils.StorageProvider;
 
 namespace revs_bens_service
 {
@@ -30,6 +32,7 @@ namespace revs_bens_service
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IPeopleService, PeopleService>();
+            services.AddSingleton<ICouncilTaxService, CouncilTaxService>();
             services.AddSingleton<ICivicaServiceGateway, CivicaServiceGateway>();
 
             services
@@ -42,6 +45,7 @@ namespace revs_bens_service
             services.AddHealthChecks()
                 .AddCheck<TestHealthCheck>("TestHealthCheck");
             services.AddHttpClient();
+            services.AddStorageProvider(Configuration);
 
             services.AddSwaggerGen(c =>
             {
@@ -62,7 +66,7 @@ namespace revs_bens_service
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            if (env.IsDevelopment())
+            if (env.IsEnvironment("local"))
             {
                 app.UseDeveloperExceptionPage();
             }
@@ -77,7 +81,7 @@ namespace revs_bens_service
             app.UseHealthChecks("/healthcheck", HealthCheckConfig.Options);
             app.UseSwagger();
             app.UseMvc();
-            var swaggerPrefix = env.IsDevelopment() ? string.Empty : "/revsbensservice";
+            var swaggerPrefix = env.IsEnvironment("local") ? string.Empty : "/revsbensservice";
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint($"{swaggerPrefix}/swagger/v1/swagger.json", "revs_bens_service API");

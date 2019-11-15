@@ -30,56 +30,56 @@ namespace revs_bens_service.Services.CouncilTax
          *               HasBenefits: 
          *          }
          */
-        public CouncilTaxDetailsModel GetCouncilTaxDetails(string personReference, string accountReference, int year)
+        public async Task<CouncilTaxDetailsModel> GetCouncilTaxDetails(string personReference, string accountReference, int year)
         {
             dynamic model = new ExpandoObject();
 
-            Task.WaitAll(
-                Task.Run(async () =>
-                {
-                    var response = await _gateway.GetAllTransactionsForYear(personReference, accountReference, year);
-                    var transactions = response.Parse<TransactionResponse>().ResponseContent.Transaction;
-                    ParseTransactions(ref model, transactions);
-                }), 
-                Task.Run(async () =>
-                {
-                    var response = await _gateway.GetAccount(personReference, accountReference);
-                    var account = response.Parse<CouncilTaxAccountResponse>().ResponseContent;
-                    ParseAccount(ref model, account);
-                }), 
-                Task.Run(async () =>
-                {
-                    var response = await _gateway.GetAccounts(personReference);
-                    model.Accounts = response.Parse<IEnumerable<CtaxActDetails>>().ResponseContent;
-                }), 
-                Task.Run(async () =>
-                {
-                    var response = await _gateway.GetPaymentSchedule(personReference, year.ToString());
-                    var payments = response.Parse<CouncilTaxPaymentScheduleResponse>().ResponseContent;
-                    ParsePayments(ref model, payments.InstalmentList);
-                }), 
-                Task.Run(async () =>
-                {
-                    var response = await _gateway.GetCurrentProperty(personReference);
-                    model.Property = response.Parse<Places>().ResponseContent;
-                }), 
-                Task.Run(async () =>
-                {
-                    var response = await _gateway.GetDocumentsWithAccountReference(personReference, accountReference);
-                    model.Documents = response.Parse<List<CouncilTaxDocumentReference>>().ResponseContent;
-                }), 
-                Task.Run(async () =>
-                {
-                    var response = await _gateway.IsBenefitsClaimant(personReference);
-                    model.HasBenefits = response.Parse<bool>().ResponseContent;
-                })
+            await Task.WhenAll(new List<Task> {
+                    Task.Run(async () =>
+                    {
+                        var response = await _gateway.GetAllTransactionsForYear(personReference, accountReference, year);
+                        var transactions = response.Parse<TransactionResponse>().ResponseContent.Transaction;
+                        ParseTransactions(ref model, transactions);
+                    }),
+                    Task.Run(async () =>
+                    {
+                        var response = await _gateway.GetAccount(personReference, accountReference);
+                        var account = response.Parse<CouncilTaxAccountResponse>().ResponseContent;
+                        ParseAccount(ref model, account);
+                    }),
+                    Task.Run(async () =>
+                    {
+                        var response = await _gateway.GetAccounts(personReference);
+                        model.Accounts = response.Parse<IEnumerable<CtaxActDetails>>().ResponseContent;
+                    }),
+                    Task.Run(async () =>
+                    {
+                        var response = await _gateway.GetPaymentSchedule(personReference, year.ToString());
+                        var payments = response.Parse<CouncilTaxPaymentScheduleResponse>().ResponseContent;
+                        ParsePayments(ref model, payments.InstalmentList);
+                    }),
+                    Task.Run(async () =>
+                    {
+                        var response = await _gateway.GetCurrentProperty(personReference);
+                        model.Property = response.Parse<Places>().ResponseContent;
+                    }),
+                    Task.Run(async () =>
+                    {
+                        var response = await _gateway.GetDocumentsWithAccountReference(personReference, accountReference);
+                        model.Documents = response.Parse<List<CouncilTaxDocumentReference>>().ResponseContent;
+                    }),
+                    Task.Run(async () =>
+                    {
+                        var response = await _gateway.IsBenefitsClaimant(personReference);
+                        model.HasBenefits = response.Parse<bool>().ResponseContent;
+                    })
+                }
             );
 
             return GenerateCouncilTaxDetailsModel(model);
         }
 
         #region Transaction Based Methods
-
         private void ParsePayments(ref dynamic model, List<Instalment> instalments)
         {
             model.UpcomingPayments = instalments.Select(_ => new InstallmentModel
@@ -87,7 +87,7 @@ namespace revs_bens_service.Services.CouncilTax
                 Amount = _.AmountDue,
                 Date = DateTime.Parse(_.DateDue),
                 IsDirectDebit = bool.Parse(_.IsDirectDebit)
-            });
+            }).ToList();
         }
 
         private void ParseTransactions(ref dynamic model, IEnumerable<Transaction> transactions)
@@ -101,8 +101,8 @@ namespace revs_bens_service.Services.CouncilTax
                 Description = GetDescription(transaction.TranType, Convert(transaction.SubCode), transaction.PlaceDetail?.PostCode)
             }).Distinct().ToArray();
 
-            model.TransactionHistory = parsedTransactions.Where(t => t.Type != "Charge" && t.Type != "REFUNDS" && t.Type != "PAYMENTS");
-            model.PaymentTransactions = parsedTransactions.Where(t => t.Type == "PAYMENTS" || t.Type == "REFUNDS");
+            model.TransactionHistory = parsedTransactions.Where(t => t.Type != "Charge" && t.Type != "REFUNDS" && t.Type != "PAYMENTS").ToList();
+            model.PaymentTransactions = parsedTransactions.Where(t => t.Type == "PAYMENTS" || t.Type == "REFUNDS").ToList();
         }
 
         private bool IsCredit(decimal amount, string type)
@@ -217,12 +217,11 @@ namespace revs_bens_service.Services.CouncilTax
                                        .YearSummaries?
                                        .FirstOrDefault()?
                                        .NextPayment ?? new PaymentSummaryResponse();
-            model.AccountName = account.AccountDetails.BankDetails.AccountName;
-            model.AccountNumber = account.AccountDetails.BankDetails.AccountNumber;
+            model.AccountName = account.AccountDetails.BankDetails?.AccountName;
+            model.AccountNumber = account.AccountDetails.BankDetails?.AccountNumber;
             model.IsFinalNotice = account.FinancialDetails.YearTotals?.FirstOrDefault()?.YearSummaries.Any(x => !ValidAccountStages.Contains(x.Stage.StageCode));
             model.IsClosed = account.CtxActClosed == "TRUE";
         }
-
         #endregion
 
         #region Parsing To CouncilTaxDetailsModel
@@ -242,11 +241,11 @@ namespace revs_bens_service.Services.CouncilTax
                 IsClosed = model.IsClosed,
                 AccountNumber = model.AccountNumber,
                 AccountName = model.AccountName,
-                LiabilityPeriodStart = model.Property?.LiabilityPeriodStart,
-                LiabilityPeriodEnd = model.Property?.LiabilityPeriodStart,
-                UpcomingPayments = model.UpcomingPayments,
-                TransactionHistory = model.TransactionsHistory,
-                PreviousPayments = model.PreviousTransactions
+                LiabilityPeriodStart = model.Property.ChargeDetails?.Dates?.Start,
+                LiabilityPeriodEnd = model.Property.ChargeDetails?.Dates?.End,
+                //UpcomingPayments = model.UpcomingPayments,
+                TransactionHistory = model.TransactionHistory,
+                PreviousPayments = model.PaymentTransactions
             };
         }
 
