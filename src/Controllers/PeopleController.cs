@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using revs_bens_service.Services.Dashboard;
 using revs_bens_service.Services.HousingBenefits;
 using StockportGovUK.AspNetCore.Attributes.TokenAuthentication;
 
@@ -14,12 +13,10 @@ namespace revs_bens_service.Controllers
     [TokenAuthentication]
     public class PeopleController : ControllerBase
     {
-        private readonly IPeopleService _peopleService;
         private readonly IBenefitsService _benefitsService;
 
-        public PeopleController(IPeopleService peopleService, IBenefitsService benefitsService)
+        public PeopleController(IBenefitsService benefitsService)
         {
-            _peopleService = peopleService;
             _benefitsService = benefitsService;
         }
 
@@ -27,7 +24,7 @@ namespace revs_bens_service.Controllers
         [Route("{personReference}/is-benefits-claimant")]
         public async Task<IActionResult> IsBenefitsClaimant([FromRoute][Required] string personReference)
         {
-            var model = await _peopleService.IsBenefitsClaimant(personReference);
+            var model = await _benefitsService.IsBenefitsClaimant(personReference);
 
             return StatusCode(StatusCodes.Status200OK, model);
         }

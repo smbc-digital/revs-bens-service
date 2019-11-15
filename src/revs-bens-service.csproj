@@ -24,23 +24,27 @@
     <PackageReference Include="StockportGovUK.AspNetCore.Logging.Elasticsearch.Aws" Version="0.*" />
     <PackageReference Include="StockportGovUK.AspNetCore.Middleware.ExceptionHandling" Version="0.*" />
     <!--<PackageReference Include="StockportGovUK.AspNetCore.Gateways" Version="0.5.5" />-->
-    <PackageReference Include="StockportGovUK.NetStandard.Models" Version="0.3.8-prerelease128" />
+    <!-- <PackageReference Include="StockportGovUK.NetStandard.Models" Version="0.3.8-prerelease128" /> -->
     <PackageReference Include="System.Text.RegularExpressions" Version="4.*" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="4.0.1" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="StockportGovUK.AspNetCore.Gateways">
-      <HintPath>C:\code\libraries\StockportGovUK.AspNetCore.Gateways\bin\Debug\netcoreapp2.2\StockportGovUK.AspNetCore.Gateways.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <PropertyGroup>
     <PackageLicenseFile>License.txt</PackageLicenseFile>
     <LangVersion>7.1</LangVersion>
   </PropertyGroup>
+
   <ItemGroup>
     <None Include="License.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="StockportGovUK.AspNetCore.Gateways">
+      <HintPath>C:\code\libraries\StockportGovUK.AspNetCore.Gateways\bin\Debug\netcoreapp2.2\StockportGovUK.AspNetCore.Gateways.dll</HintPath>
+    </Reference>
+    <Reference Include="StockportGovUK.NetStandard.Models">
+      <HintPath>C:\code\libraries\StockportGovUk.NetStandard.Models\bin\Debug\netcoreapp2.2\StockportGovUK.NetStandard.Models.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

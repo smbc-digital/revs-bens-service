@@ -5,6 +5,8 @@ namespace revs_bens_service.Services.HousingBenefits
 {
     public interface IBenefitsService
     {
+        Task<bool> IsBenefitsClaimant(string personReference);
+        
         Task<dynamic> GetBenefitsDetails(string personReference);
     }
 }

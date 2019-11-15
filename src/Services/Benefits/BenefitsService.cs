@@ -8,36 +8,48 @@ using revs_bens_service.Services.Models;
 using revs_bens_service.Utils.Parsers;
 using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
 using StockportGovUK.NetStandard.Models.Models.RevsAndBens;
+using StockportGovUK.NetStandard.Models.RevsAndBens;
 
 namespace revs_bens_service.Services.HousingBenefits
 {
     public class BenefitsService : IBenefitsService
     {
         private readonly ICivicaServiceGateway _civicaServiceGateway;
+
         public BenefitsService(ICivicaServiceGateway civicaServiceGateway)
         {
             _civicaServiceGateway = civicaServiceGateway;
+        }
+
+        public async Task<bool> IsBenefitsClaimant(string personReference)
+        {
+            var response = await _civicaServiceGateway.IsBenefitsClaimant(personReference);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return response.Parse<bool>().ResponseContent;
+            }
+
+            throw new Exception($"IsBenefistClaimant({personReference}) failed with status code: {response.StatusCode}");
         }
 
         public async Task<dynamic> GetBenefitsDetails(string personReference)
         {
             var benefitClaims = new List<dynamic>();
             var benefitsResponse = await _civicaServiceGateway.GetBenefits(personReference);
-            var benefitsDetails = benefitsResponse.Parse<ClaimsSummaryResponse>().ResponseContent;
+            var claims = benefitsResponse.Parse<List<BenefitsClaimSummary>>().ResponseContent;
 
-            if (benefitsDetails.Claims == null)
+            if (!claims.Any())
             {
                 return null;
             }
 
-            foreach (var claim in benefitsDetails.Claims.Summary)
+            foreach (var claim in claims)
             {
                 dynamic model = new ExpandoObject();
 
-                var response = await _civicaServiceGateway.GetBenefitDetails(personReference, claim.Number, claim.PlaceRef);
-                var t = await response.Content.ReadAsStringAsync();
-                var u = response.Parse<ClaimDetails>().ResponseContent;
-                model.ClaimDetails = response.Parse<ClaimDetails>().ResponseContent;
+                var response = await _civicaServiceGateway.GetBenefitDetails(personReference, claim.Number, claim.PlaceReference);
+                model.ClaimDetails = response.Parse<BenefitsClaim>().ResponseContent;
                 model.ClaimDetails.NextPayment.PaymentSchedule = SetPaymentStatus(
                     model.ClaimDetails.NextPayment.Amount,
                     model.ClaimDetails.BenefitEntitlement,
@@ -49,16 +61,15 @@ namespace revs_bens_service.Services.HousingBenefits
                 );
 
                 var documents = await _civicaServiceGateway.GetDocuments(personReference);
-                model.Documents = response.Parse<List<Document>>().ResponseContent;
+                model.Documents = documents.Parse<List<Document>>().ResponseContent;
 
                 var housingPaymentHistory = await _civicaServiceGateway.GetHousingBenefitPaymentHistory(personReference);
-                model.HousingPaymentsHistory = response.Parse<List<HousingBenefitsPaymentDetail>>().ResponseContent;
+                model.HousingPaymentsHistory = housingPaymentHistory.Parse<List<HousingBenefitsPaymentDetail>>().ResponseContent;
 
-                var ctaxPaymentHistory = await _civicaServiceGateway.GetCtaxBenefitPaymentHistory(personReference);
-                var content = response.Parse<List<CtaxBenefitsPaymentDetail>>().ResponseContent;
+                var ctaxPaymentHistory = await _civicaServiceGateway.GetCouncilTaxBenefitPaymentHistory(personReference);
+                var content = ctaxPaymentHistory.Parse<List<CtaxBenefitsPaymentDetail>>().ResponseContent;
                 model.CouncilTaxPaymentPaymentHistory = content;
-                model.CouncilTaxCurrentSummary = BuildCouncilTaxSupportSummary(personReference, content);
-
+                model.CouncilTaxCurrentSummary = await BuildCouncilTaxSupportSummary(personReference, content);
 
                 benefitClaims.Add(model);
             }
