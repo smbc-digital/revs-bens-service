@@ -56,9 +56,7 @@ namespace revs_bens_service.Controllers
                 ts.Hours, ts.Minutes, ts.Seconds,
                 ts.Milliseconds / 10);
 
-            Console.WriteLine("RunTime " + elapsedTime);
-
-            return Ok(model);
+            return Ok(new { elapsedTime, model });
         }
     }
 }
