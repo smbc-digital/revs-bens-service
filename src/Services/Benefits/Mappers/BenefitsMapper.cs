@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
@@ -9,7 +8,7 @@ namespace revs_bens_service.Services.Benefits.Mappers
     {
         public static ClaimDetails MapToClaimDetails(this BenefitsClaim claim)
         {
-            var response = new ClaimDetails
+            return new ClaimDetails
             {
                 Number = claim.Number,
                 Status = ParseStatusCode(claim.Status),
@@ -18,8 +17,6 @@ namespace revs_bens_service.Services.Benefits.Mappers
                 CurrentEntitlement = ParseBenefitsEntitlement(claim.BenefitEntitlement),
                 BenefitsCombination = SetBenefitsCombination(claim.BenefitEntitlement, claim.Status)
             };
-
-            return response;
         }
 
         public static List<BenefitsDocument> MapToDocuments(this List<CouncilTaxDocument> documents)
@@ -27,8 +24,8 @@ namespace revs_bens_service.Services.Benefits.Mappers
             return documents.Select(_ => new BenefitsDocument
             {
                 AccountReference = _.AccountReference,
-                DateCreated = DateTime.Parse(_.DateCreated),
-                Downloaded = _.Downloaded.ToLower() == "yes",
+                DateCreated = _.DateCreated,
+                Downloaded = _.Downloaded,
                 Id = _.DocumentId,
                 Type = _.DocumentType,
                 Name = _.DocumentName
@@ -40,13 +37,13 @@ namespace revs_bens_service.Services.Benefits.Mappers
         {
             return payments.Select(_ => new Payment
             {
-                DatePaid = DateTime.Parse(_.DatePaid),
-                Amount = Convert.ToDecimal(_.PayAmount),
-                PeriodStart = DateTime.Parse(_.PeriodStart),
-                PeriodEnd = DateTime.Parse(_.PeriodEnd),
+                DatePaid = _.DatePaid,
+                Amount = _.PayAmount,
+                PeriodStart = _.PeriodStart,
+                PeriodEnd = _.PeriodEnd,
                 Type = _.PayType,
                 Payee = _.Payee,
-                OnAct = _.OnAct.ToLower() == "yes",
+                OnAct = _.OnAct,
                 CouncilTaxReference = _.CouncilTaxReference
             })
             .ToList();
@@ -56,11 +53,11 @@ namespace revs_bens_service.Services.Benefits.Mappers
         {
             return new NextPayment
             {
-                Amount = Convert.ToDecimal(claim.NextPayment.Amount),
+                Amount = claim.NextPayment.Amount,
                 Method = claim.NextPayment.Method,
-                PaidUpToAmount = Convert.ToDecimal(claim.NextPayment.PaidUpToAmount),
+                PaidUpToAmount = claim.NextPayment.PaidUpToAmount,
                 Payee = claim.NextPayment.Payee,
-                DueDate = !string.IsNullOrEmpty(claim.NextPayment.PaymentDueDate) ? DateTime.Parse(claim.NextPayment.PaymentDueDate) : new DateTime(),
+                DueDate = claim.NextPayment.PaymentDueDate,
                 Schedule = claim.NextPayment.Schedule,
                 Status = SetPaymentStatus(claim.NextPayment.Amount, claim.BenefitEntitlement, claim.NextPayment.Schedule)
             };
@@ -136,15 +133,15 @@ namespace revs_bens_service.Services.Benefits.Mappers
             }
 
             var ctax = benefitsEntitlement.CouncilTax != null
-                ? Convert.ToDecimal(benefitsEntitlement.CouncilTax.WeeklyBenefit)
-                : (decimal)0.00;
+                ? benefitsEntitlement.CouncilTax.WeeklyBenefit
+                : "0.00";
 
             var rentType = benefitsEntitlement.PrivateRent ?? benefitsEntitlement.CouncilRent;
-            var housingBenefit = (decimal)0.00;
+            var housingBenefit = "0.00";
 
             if (rentType != null)
             {
-                housingBenefit = Convert.ToDecimal(rentType.WeeklyBenefit);
+                housingBenefit = rentType.WeeklyBenefit;
             }
 
             return new CurrentEntitlement

@@ -7,6 +7,6 @@ namespace revs_bens_service.Services.HousingBenefits
     {
         Task<bool> IsBenefitsClaimant(string personReference);
         
-        Task<Claim> GetBenefitsDetails(string personReference);
+        Task<Claim> GetBenefits(string personReference);
     }
 }

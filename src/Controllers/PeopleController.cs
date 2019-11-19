@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using revs_bens_service.Services.HousingBenefits;
 using StockportGovUK.AspNetCore.Attributes.TokenAuthentication;
@@ -26,16 +25,16 @@ namespace revs_bens_service.Controllers
         {
             var model = await _benefitsService.IsBenefitsClaimant(personReference);
 
-            return StatusCode(StatusCodes.Status200OK, model);
+            return Ok(model);
         }
 
         [HttpGet]
         [Route("{personReference}/benefits")]
         public async Task<IActionResult> GetBenefits([FromRoute][Required] string personReference)
         {
-            var model = await _benefitsService.GetBenefitsDetails(personReference);
+            var model = await _benefitsService.GetBenefits(personReference);
 
-            return StatusCode(StatusCodes.Status200OK, model);
+            return Ok(model);
         }
     }
 }

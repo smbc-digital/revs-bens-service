@@ -32,10 +32,10 @@ namespace revs_bens_service.Services.HousingBenefits
                 return response.Parse<bool>().ResponseContent;
             }
 
-            throw new Exception($"IsBenefistClaimant({personReference}) failed with status code: {response.StatusCode}");
+            throw new Exception($"IsBenefitsClaimant({personReference}) failed with status code: {response.StatusCode}");
         }
 
-        public async Task<Claim> GetBenefitsDetails(string personReference)
+        public async Task<Claim> GetBenefits(string personReference)
         {
             var cacheResponse = await _cacheProvider.GetStringAsync($"{personReference}-{CacheKeys.BenefitDetails}");
 
@@ -44,7 +44,6 @@ namespace revs_bens_service.Services.HousingBenefits
                 return JsonConvert.DeserializeObject<Claim>(cacheResponse);
             }
 
-            var benefitClaims = new List<Claim>();
             var benefitsResponse = await _civicaServiceGateway.GetBenefits(personReference);
             var claims = benefitsResponse.Parse<List<BenefitsClaimSummary>>().ResponseContent;
 
@@ -53,81 +52,84 @@ namespace revs_bens_service.Services.HousingBenefits
                 return null;
             }
 
-            foreach (var claim in claims)
+            var claimResponse = claims.Select(_ => new Claim
             {
-                var model = new Claim();
-
-                await Task.WhenAll(
-                    Task.Run(async () =>
-                    {
-                        var response = await _civicaServiceGateway.GetBenefitDetails(personReference, claim.Number, claim.PlaceReference);
-                        var benefitsClaim = response.Parse<BenefitsClaim>().ResponseContent;
-                        model.Details = benefitsClaim.MapToClaimDetails();
-                    }),
-                    Task.Run(async () =>
-                    {
-                        var response = await _civicaServiceGateway.GetDocuments(personReference);
-                        var documents = response.Parse<List<CouncilTaxDocument>>().ResponseContent;
-                        model.Documents = documents.MapToDocuments().Where(_ => _.Type == "Notif").ToList();
-                    }),
-                    Task.Run(async () =>
-                    {
-                        var response = await _civicaServiceGateway.GetHousingBenefitPaymentHistory(personReference);
-                        var payments = response.Parse<List<PaymentDetail>>().ResponseContent;
-                        model.HousingBenefitPaymentHistory = payments.MapToPayments();
-                    }),
-                    Task.Run(async () =>
-                    {
-                        var response = await _civicaServiceGateway.GetCouncilTaxBenefitPaymentHistory(personReference);
-                        var payments = response.Parse<List<PaymentDetail>>().ResponseContent;
-                        model.CouncilTaxPaymentHistory = payments.MapToPayments();
-                        model.BenefitsSummary = await BuildBenefitsSummary(personReference, payments);
-                    })
-                );
-
-                benefitClaims.Add(model);
-            }
-
-            var claimResponse = benefitClaims.FirstOrDefault(_ => _.Details.Status == "Current");
+                Details = GetDetails(personReference, _.Number, _.PlaceReference).Result,
+                Documents = GetDocuments(personReference).Result,
+                HousingBenefitPaymentHistory = GetHousingBenefitsPayments(personReference).Result,
+                CouncilTaxPaymentHistory = GetCouncilTaxPayments(personReference).Result,
+                BenefitsSummary = GetBenefitsSummary(personReference).Result
+            })
+            .FirstOrDefault(_ => _.Details.Status == "Current");
 
             _ = _cacheProvider.SetStringAsync($"{personReference}-{CacheKeys.BenefitDetails}", JsonConvert.SerializeObject(claimResponse));
 
             return claimResponse;
         }
 
-        private int ToFinancialYear(DateTime date) => date.Month < 4 ? date.Year - 1 : date.Year;
-
-        private async Task<BenefitsSummary> BuildBenefitsSummary(string personReference, List<PaymentDetail> councilTaxSupportPayments)
+        private async Task<ClaimDetails> GetDetails(string personReference, string claimNumber, string placeReference)
         {
+            var response = await _civicaServiceGateway.GetBenefitDetails(personReference, claimNumber, placeReference);
+            var benefitsClaim = response.Parse<BenefitsClaim>().ResponseContent;
+            return benefitsClaim.MapToClaimDetails();
+        }
+
+        private async Task<List<BenefitsDocument>> GetDocuments(string personReference)
+        {
+            var response = await _civicaServiceGateway.GetDocuments(personReference);
+            var documents = response.Parse<List<CouncilTaxDocument>>().ResponseContent;
+            return documents.MapToDocuments().Where(_ => _.Type == "Notif").ToList();
+        }
+
+        private async Task<List<Payment>> GetHousingBenefitsPayments(string personReference)
+        {
+            var response = await _civicaServiceGateway.GetHousingBenefitPaymentHistory(personReference);
+            var payments = response.Parse<List<PaymentDetail>>().ResponseContent;
+            return payments.MapToPayments();
+        }
+
+        private async Task<List<Payment>> GetCouncilTaxPayments(string personReference)
+        {
+            var response = await _civicaServiceGateway.GetCouncilTaxBenefitPaymentHistory(personReference);
+            var payments = response.Parse<List<PaymentDetail>>().ResponseContent;
+            return payments.MapToPayments();
+        }
+
+        private async Task<BenefitsSummary> GetBenefitsSummary(string personReference)
+        {
+            var payments = await GetCouncilTaxPayments(personReference);
             var currentTaxYear = ToFinancialYear(DateTime.Now);
 
-            var currentYearPayments = councilTaxSupportPayments
-                    .Where(_ => ToFinancialYear(DateTime.Parse(_.PeriodStart)) == currentTaxYear)
-                    .ToList();
+            var currentYearPayments = payments
+                .Where(_ => ToFinancialYear(DateTime.Parse(_.PeriodStart)) == currentTaxYear)
+                .ToList();
 
             var accountReference = currentYearPayments.FirstOrDefault() != null
                 ? currentYearPayments.First().CouncilTaxReference
                 : "N/A";
 
-            var response = new BenefitsSummary
+            var response = await _civicaServiceGateway.GetAccountDetailsForYear(personReference, accountReference, currentTaxYear);
+            var responseTotals = response.Parse<RecievedYearTotal>().ResponseContent;
+
+            if (responseTotals == null)
+            {
+                return new BenefitsSummary
+                {
+                    TaxYear = currentTaxYear,
+                    AccountReference = accountReference,
+                };
+            }
+
+            return new BenefitsSummary
             {
                 TaxYear = currentTaxYear,
                 AccountReference = accountReference,
+                TotalBill = responseTotals.TotalCharge ?? "0.00",
+                TotalBenefits = responseTotals.TotalBenefits ?? "0.00",
+                BalanceOutstanding = responseTotals.BalanceOutstanding ?? "0.00"
             };
-
-            var accountResponse = await _civicaServiceGateway.GetAccountDetailsForYear(personReference, accountReference, currentTaxYear);
-            var totals = accountResponse.Parse<RecievedYearTotal>().ResponseContent;
-
-            if (totals == null)
-            {
-                return response;
-            }
-
-            response.TotalBill = !string.IsNullOrEmpty(totals.TotalCharge) ? Convert.ToDecimal(totals.TotalCharge) : (decimal)0.00;
-            response.TotalBenefits = !string.IsNullOrEmpty(totals.TotalBenefits) ? Convert.ToDecimal(totals.TotalBenefits) : (decimal)0.00;
-            response.BalanceOutstanding = !string.IsNullOrEmpty(totals.BalanceOutstanding) ? Convert.ToDecimal(totals.BalanceOutstanding) : (decimal)0.00;
-
-            return response;
         }
+
+        private int ToFinancialYear(DateTime date) => date.Month < 4 ? date.Year - 1 : date.Year;
     }
 }
