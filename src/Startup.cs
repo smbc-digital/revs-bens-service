@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using revs_bens_service.Services.Dashboard;
+using revs_bens_service.Utils.StorageProvider;
 using StockportGovUK.AspNetCore.Middleware;
 using StockportGovUK.AspNetCore.Availability;
 using StockportGovUK.AspNetCore.Availability.Middleware;
@@ -16,6 +16,7 @@ using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
 using revs_bens_service.Services;
 using revs_bens_service.Services.CouncilTax;
 using revs_bens_service.Utils.StorageProvider;
+using revs_bens_service.Services.HousingBenefits;
 
 namespace revs_bens_service
 {
@@ -33,7 +34,9 @@ namespace revs_bens_service
         {
             services.AddSingleton<IPeopleService, PeopleService>();
             services.AddSingleton<ICouncilTaxService, CouncilTaxService>();
+            services.AddSingleton<IBenefitsService, BenefitsService>();
             services.AddSingleton<ICivicaServiceGateway, CivicaServiceGateway>();
+            services.AddStorageProvider(Configuration);
 
             services
                 .AddMvc()
