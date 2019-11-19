@@ -23,6 +23,7 @@ namespace revs_bens_service.Services.Models
         public List<InstallmentModel> UpcomingPayments { get; set; }
         public List<TransactionModelExtension> PreviousPayments { get; set; }
         public List<TransactionModelExtension> TransactionHistory { get; set; }
+        public bool HasBenefits { get; set; }
     }
 
     public class InstallmentModel
