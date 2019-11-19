@@ -34,46 +34,47 @@ namespace revs_bens_service.Services.CouncilTax
         {
             dynamic model = new ExpandoObject();
 
-            await Task.WhenAll(new List<Task> {
-                    Task.Run(async () =>
-                    {
-                        var response = await _gateway.GetAllTransactionsForYear(personReference, accountReference, year);
-                        var transactions = response.Parse<TransactionResponse>().ResponseContent.Transaction;
-                        ParseTransactions(ref model, transactions);
-                    }),
-                    Task.Run(async () =>
-                    {
-                        var response = await _gateway.GetAccount(personReference, accountReference);
-                        var account = response.Parse<CouncilTaxAccountResponse>().ResponseContent;
-                        ParseAccount(ref model, account);
-                    }),
-                    Task.Run(async () =>
-                    {
-                        var response = await _gateway.GetAccounts(personReference);
-                        model.Accounts = response.Parse<IEnumerable<CtaxActDetails>>().ResponseContent;
-                    }),
-                    Task.Run(async () =>
-                    {
-                        var response = await _gateway.GetPaymentSchedule(personReference, year.ToString());
-                        var payments = response.Parse<CouncilTaxPaymentScheduleResponse>().ResponseContent;
-                        ParsePayments(ref model, payments.InstalmentList);
-                    }),
-                    Task.Run(async () =>
-                    {
-                        var response = await _gateway.GetCurrentProperty(personReference);
-                        model.Property = response.Parse<Places>().ResponseContent;
-                    }),
-                    Task.Run(async () =>
-                    {
-                        var response = await _gateway.GetDocumentsWithAccountReference(personReference, accountReference);
-                        model.Documents = response.Parse<List<CouncilTaxDocumentReference>>().ResponseContent;
-                    }),
-                    Task.Run(async () =>
-                    {
-                        var response = await _gateway.IsBenefitsClaimant(personReference);
-                        model.HasBenefits = response.Parse<bool>().ResponseContent;
-                    })
-                }
+            await _gateway.GetSessionId(personReference);
+
+            await Task.WhenAll(
+                Task.Run(async () =>
+                {
+                    var response = await _gateway.GetAllTransactionsForYear(personReference, accountReference, year);
+                    var transactions = response.Parse<TransactionResponse>().ResponseContent.Transaction;
+                    ParseTransactions(ref model, transactions);
+                }),
+                Task.Run(async () =>
+                {
+                    var response = await _gateway.GetAccount(personReference, accountReference);
+                    var account = response.Parse<CouncilTaxAccountResponse>().ResponseContent;
+                    ParseAccount(ref model, account);
+                }),
+                Task.Run(async () =>
+                {
+                    var response = await _gateway.GetAccounts(personReference);
+                    model.Accounts = response.Parse<IEnumerable<CtaxActDetails>>().ResponseContent;
+                }),
+                Task.Run(async () =>
+                {
+                    var response = await _gateway.GetPaymentSchedule(personReference, year.ToString());
+                    var payments = response.Parse<CouncilTaxPaymentScheduleResponse>().ResponseContent;
+                    ParsePayments(ref model, payments.InstalmentList);
+                }),
+                Task.Run(async () =>
+                {
+                    var response = await _gateway.GetCurrentProperty(personReference);
+                    model.Property = response.Parse<Places>().ResponseContent;
+                }),
+                Task.Run(async () =>
+                {
+                    var response = await _gateway.GetDocumentsWithAccountReference(personReference, accountReference);
+                    model.Documents = response.Parse<List<CouncilTaxDocumentReference>>().ResponseContent;
+                }),
+                Task.Run(async () =>
+                {
+                    var response = await _gateway.IsBenefitsClaimant(personReference);
+                    model.HasBenefits = response.Parse<bool>().ResponseContent;
+                })
             );
 
             return GenerateCouncilTaxDetailsModel(model);
