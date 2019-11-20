@@ -4,8 +4,8 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using revs_bens_service.Services.Benefits;
 using revs_bens_service.Services.CouncilTax;
-using revs_bens_service.Services.Dashboard;
 using StockportGovUK.AspNetCore.Attributes.TokenAuthentication;
 
 namespace revs_bens_service.Controllers
@@ -16,14 +16,14 @@ namespace revs_bens_service.Controllers
     [TokenAuthentication]
     public class PeopleController : ControllerBase
     {
-        private readonly IPeopleService _peopleService;
+        private readonly IBenefitsService _benefitsService;
         private readonly ICouncilTaxService _councilTaxService;
 
         public PeopleController(
-            IPeopleService peopleService, 
+            IBenefitsService benefitsService, 
             ICouncilTaxService councilTaxService)
         {
-            _peopleService = peopleService;
+            _benefitsService = benefitsService;
             _councilTaxService = councilTaxService;
         }
 
@@ -31,7 +31,16 @@ namespace revs_bens_service.Controllers
         [Route("{personReference}/is-benefits-claimant")]
         public async Task<IActionResult> IsBenefitsClaimant([FromRoute][Required]string personReference)
         {
-            var model = await _peopleService.IsBenefitsClaimant(personReference);
+            var model = await _benefitsService.IsBenefitsClaimant(personReference);
+
+            return StatusCode(StatusCodes.Status200OK, model);
+        }
+
+        [HttpGet]
+        [Route("{personReference}/benefits")]
+        public async Task<IActionResult> GetBenefits([FromRoute][Required]string personReference)
+        {
+            var model = await _benefitsService.GetBenefits(personReference);
 
             return StatusCode(StatusCodes.Status200OK, model);
         }

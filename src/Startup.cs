@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using revs_bens_service.Services.Benefits;
 using revs_bens_service.Services.CouncilTax;
-using revs_bens_service.Services.Dashboard;
 using revs_bens_service.Utils.HealthChecks;
 using revs_bens_service.Utils.StorageProvider;
 using StockportGovUK.AspNetCore.Availability;
@@ -32,7 +31,6 @@ namespace revs_bens_service
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IBenefitsService, BenefitsService>();
-            services.AddSingleton<IPeopleService, PeopleService>();
             services.AddSingleton<ICouncilTaxService, CouncilTaxService>();
             services.AddSingleton<IBenefitsService, BenefitsService>();
             services.AddSingleton<ICivicaServiceGateway, CivicaServiceGateway>();
