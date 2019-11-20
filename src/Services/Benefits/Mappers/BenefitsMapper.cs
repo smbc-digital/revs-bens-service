@@ -23,7 +23,7 @@ namespace revs_bens_service.Services.Benefits.Mappers
         {
             return documents.Select(_ => new BenefitsDocument
             {
-                AccountReference = _.AccountReference,
+                ClaimNumber = _.ClaimNumber,
                 DateCreated = _.DateCreated,
                 Downloaded = _.Downloaded,
                 Id = _.DocumentId,
