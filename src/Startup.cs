@@ -1,22 +1,20 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Collections.Generic;
-using revs_bens_service.Utils.HealthChecks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using revs_bens_service.Services.Benefits;
+using revs_bens_service.Services.Dashboard;
+using revs_bens_service.Utils.HealthChecks;
 using revs_bens_service.Utils.StorageProvider;
-using StockportGovUK.AspNetCore.Middleware;
 using StockportGovUK.AspNetCore.Availability;
 using StockportGovUK.AspNetCore.Availability.Middleware;
 using StockportGovUK.AspNetCore.Gateways;
-using Swashbuckle.AspNetCore.Swagger;
 using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
-using revs_bens_service.Services;
-using revs_bens_service.Services.CouncilTax;
-using revs_bens_service.Utils.StorageProvider;
-using revs_bens_service.Services.HousingBenefits;
+using StockportGovUK.AspNetCore.Middleware;
+using Swashbuckle.AspNetCore.Swagger;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace revs_bens_service
 {
@@ -32,6 +30,7 @@ namespace revs_bens_service
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<IBenefitsService, BenefitsService>();
             services.AddSingleton<IPeopleService, PeopleService>();
             services.AddSingleton<ICouncilTaxService, CouncilTaxService>();
             services.AddSingleton<IBenefitsService, BenefitsService>();
@@ -77,7 +76,7 @@ namespace revs_bens_service
             {
                 app.UseHsts();
             }
-            
+
             app.UseMiddleware<Availability>();
             app.UseMiddleware<ExceptionHandling>();
             app.UseHttpsRedirection();

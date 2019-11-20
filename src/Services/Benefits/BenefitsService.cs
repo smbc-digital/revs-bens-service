@@ -10,7 +10,7 @@ using revs_bens_service.Utils.StorageProvider;
 using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
 
-namespace revs_bens_service.Services.HousingBenefits
+namespace revs_bens_service.Services.Benefits
 {
     public class BenefitsService : IBenefitsService
     {
