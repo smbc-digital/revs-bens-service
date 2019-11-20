@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 using System;
 using System.Dynamic;
 using System.Linq;
+using System.Security.Claims;
+using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
 using revs_bens_service.Services.CouncilTax.Mappers;
+using revs_bens_service.Utils.StorageProvider;
 using StockportGovUK.NetStandard.Models.Models.Civica.CouncilTax;
 
 namespace revs_bens_service.Services.CouncilTax
@@ -14,15 +18,23 @@ namespace revs_bens_service.Services.CouncilTax
     public class CouncilTaxService : ICouncilTaxService
     {
         private readonly ICivicaServiceGateway _gateway;
+        private readonly IDistributedCache _cacheProvider;
 
-        public CouncilTaxService(ICivicaServiceGateway gateway)
+        public CouncilTaxService(ICivicaServiceGateway gateway, IDistributedCache cacheProvider)
         {
             _gateway = gateway;
+            _cacheProvider = cacheProvider;
         }
 
-        // TODO:: convert GetPaymentSchedule to take year as an int and not a string #consistency 
         public async Task<CouncilTaxDetailsModel> GetCouncilTaxDetails(string personReference, string accountReference, int year)
         {
+            var cacheResponse = await _cacheProvider.GetStringAsync($"{personReference}-{CacheKeys.CouncilTaxDetails}");
+
+            if (!string.IsNullOrEmpty(cacheResponse))
+            {
+                return JsonConvert.DeserializeObject<CouncilTaxDetailsModel>(cacheResponse);
+            }
+
             var model = new CouncilTaxDetailsModel();
 
             var accountResponse = await _gateway.GetAccount(personReference, accountReference);
@@ -31,7 +43,7 @@ namespace revs_bens_service.Services.CouncilTax
             var transactionsResponse = await _gateway.GetAllTransactionsForYear(personReference, accountReference, year);
             model = transactionsResponse.Parse<TransactionResponse>().ResponseContent.MapTransactions(model);
 
-            var paymentResponse = await _gateway.GetPaymentSchedule(personReference, year.ToString());
+            var paymentResponse = await _gateway.GetPaymentSchedule(personReference, year);
             model = paymentResponse.Parse<CouncilTaxPaymentScheduleResponse>().ResponseContent.MapPayments(model);
 
             var currentPropertyResponse = await _gateway.GetCurrentProperty(personReference);
@@ -39,6 +51,8 @@ namespace revs_bens_service.Services.CouncilTax
 
             var isBenefitsResponse = await _gateway.IsBenefitsClaimant(personReference);
             model.HasBenefits = isBenefitsResponse.Parse<bool>().ResponseContent;
+
+            _ = _cacheProvider.SetStringAsync($"{personReference}-{CacheKeys.CouncilTaxDetails}", JsonConvert.SerializeObject(model));
 
             return model;
         }

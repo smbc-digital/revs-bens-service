@@ -13,7 +13,7 @@ namespace revs_bens_service.Services.Benefits.Mappers
                 Number = claim.Number,
                 Status = ParseStatusCode(claim.Status),
                 NextPayment = SetNextPayment(claim),
-                Address = string.Join(", ", new [] { claim.Address1, claim.Address2, claim.Address3, claim.Address4, claim.Postcode }.Where(_ => !string.IsNullOrEmpty(_))),
+                Address = string.Join(", ", new[] { claim.Address1, claim.Address2, claim.Address3, claim.Address4, claim.Postcode }.Where(_ => !string.IsNullOrEmpty(_))),
                 CurrentEntitlement = ParseBenefitsEntitlement(claim.BenefitEntitlement),
                 BenefitsCombination = SetBenefitsCombination(claim.BenefitEntitlement, claim.Status)
             };

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using revs_bens_service.Services.Benefits;
+using revs_bens_service.Services.CouncilTax;
 using revs_bens_service.Services.Dashboard;
 using revs_bens_service.Utils.HealthChecks;
 using revs_bens_service.Utils.StorageProvider;

@@ -39,7 +39,7 @@ namespace revs_bens_service.Services.Benefits
         {
             var cacheResponse = await _cacheProvider.GetStringAsync($"{personReference}-{CacheKeys.BenefitDetails}");
 
-            if(!string.IsNullOrEmpty(cacheResponse))
+            if (!string.IsNullOrEmpty(cacheResponse))
             {
                 return JsonConvert.DeserializeObject<Claim>(cacheResponse);
             }
