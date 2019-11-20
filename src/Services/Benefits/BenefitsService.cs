@@ -47,7 +47,7 @@ namespace revs_bens_service.Services.Benefits
             var benefitsResponse = await _civicaServiceGateway.GetBenefits(personReference);
             var claims = benefitsResponse.Parse<List<BenefitsClaimSummary>>().ResponseContent;
 
-            if (!claims.Any())
+            if (claims == null || !claims.Any())
             {
                 return null;
             }
