@@ -33,7 +33,7 @@ namespace revs_bens_service.Controllers
         {
             var model = await _benefitsService.IsBenefitsClaimant(personReference);
 
-            return StatusCode(StatusCodes.Status200OK, model);
+            return Ok(model);
         }
 
         [HttpGet]
@@ -42,7 +42,7 @@ namespace revs_bens_service.Controllers
         {
             var model = await _benefitsService.GetBenefits(personReference);
 
-            return StatusCode(StatusCodes.Status200OK, model);
+            return Ok(model);
         }
 
         //TODO: Make better than 1:10.22	
@@ -65,7 +65,7 @@ namespace revs_bens_service.Controllers
             // Format and display the TimeSpan value.	
             string elapsedTime = $"{ts.Hours:00}:{ts.Minutes:00}:{ts.Seconds:00}.{ts.Milliseconds / 10:00}";
                 
-            return Ok(new { elapsedTime, model });
+            return Ok(model);
         }
     }
 }
