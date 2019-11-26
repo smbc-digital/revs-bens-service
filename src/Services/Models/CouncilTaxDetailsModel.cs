@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using StockportGovUK.NetStandard.Models.Models.Civica.CouncilTax;
-using StockportGovUK.NetStandard.Models.Models.RevsAndBens;
 
 namespace revs_bens_service.Services.Models
 {
