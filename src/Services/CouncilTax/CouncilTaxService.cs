@@ -13,9 +13,9 @@ namespace revs_bens_service.Services.CouncilTax
     public class CouncilTaxService : ICouncilTaxService
     {
         private readonly ICivicaServiceGateway _gateway;
-        private readonly IDistributedCache _cacheProvider;
+        private readonly ICacheProvider _cacheProvider;
 
-        public CouncilTaxService(ICivicaServiceGateway gateway, IDistributedCache cacheProvider)
+        public CouncilTaxService(ICivicaServiceGateway gateway, ICacheProvider cacheProvider)
         {
             _gateway = gateway;
             _cacheProvider = cacheProvider;

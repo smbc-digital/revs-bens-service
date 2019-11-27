@@ -22,6 +22,8 @@ namespace revs_bens_service.Utils.StorageProvider
                     services.AddDistributedMemoryCache();
                     break;
             }
+
+            services.AddSingleton<ICacheProvider, CacheProvider>();
         }
     }
 }
