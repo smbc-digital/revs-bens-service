@@ -9,7 +9,9 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
         {
             model.LiabilityPeriodStart = propertyResponse.ChargeDetails?.Dates?.Start;
             model.LiabilityPeriodEnd = propertyResponse.ChargeDetails?.Dates?.End;
-            
+            model.TaxBand = propertyResponse.Band.Text;
+            model.Property = $"{propertyResponse.Address1}, {propertyResponse.Address2}";
+
             return model;
         }
     }

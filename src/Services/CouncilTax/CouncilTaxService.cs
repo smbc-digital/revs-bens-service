@@ -37,8 +37,11 @@ namespace revs_bens_service.Services.CouncilTax
 
             var model = new CouncilTaxDetailsModel();
 
+            var accountsResponse = await _gateway.GetAccounts(personReference);
+            model = accountsResponse.Parse<List<CtaxActDetails>>().ResponseContent.MapAccounts(model);
+
             var accountResponse = await _gateway.GetAccount(personReference, accountReference);
-            model = accountResponse.Parse<CouncilTaxAccountResponse>().ResponseContent.MapAccount(model);
+            model = accountResponse.Parse<CouncilTaxAccountResponse>().ResponseContent.MapAccount(model, year);
 
             var transactionsResponse = await _gateway.GetAllTransactionsForYear(personReference, accountReference, year);
             model = transactionsResponse.Parse<TransactionResponse>().ResponseContent.MapTransactions(model);
@@ -48,6 +51,9 @@ namespace revs_bens_service.Services.CouncilTax
 
             var currentPropertyResponse = await _gateway.GetCurrentProperty(personReference);
             model = currentPropertyResponse.Parse<Places>().ResponseContent.MapCurrentProperty(model);
+
+            var documentsResponse = await _gateway.GetDocuments(personReference);
+            model = documentsResponse.Parse<List<CouncilTaxDocumentReference>>().ResponseContent.DocumentsMapper(model, year);
 
             var isBenefitsResponse = await _gateway.IsBenefitsClaimant(personReference);
             model.HasBenefits = isBenefitsResponse.Parse<bool>().ResponseContent;
