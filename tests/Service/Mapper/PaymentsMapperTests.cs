@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using revs_bens_service.Services.CouncilTax.Mappers;
 using revs_bens_service.Services.Models;
 using revs_bens_service.Utils.Parsers;
