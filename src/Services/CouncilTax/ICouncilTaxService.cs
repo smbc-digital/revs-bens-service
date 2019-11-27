@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using revs_bens_service.Services.Models;
+using StockportGovUK.NetStandard.Models.Models.Civica.CouncilTax;
 
 namespace revs_bens_service.Services.CouncilTax
 {
