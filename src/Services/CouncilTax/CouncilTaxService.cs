@@ -9,6 +9,7 @@ using revs_bens_service.Services.CouncilTax.Mappers;
 using revs_bens_service.Utils.StorageProvider;
 using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
 using CouncilTaxDetailsModel = StockportGovUK.NetStandard.Models.RevsAndBens.CouncilTaxDetailsModel;
+using Transaction = revs_bens_service.Services.Models.Transaction;
 
 namespace revs_bens_service.Services.CouncilTax
 {
@@ -41,7 +42,7 @@ namespace revs_bens_service.Services.CouncilTax
             model = accountResponse.Parse<CouncilTaxAccountResponse>().ResponseContent.MapAccount(model, year);
 
             var transactionsResponse = await _gateway.GetAllTransactionsForYear(personReference, accountReference, year);
-            model = transactionsResponse.Parse<TransactionResponse>().ResponseContent.MapTransactions(model);
+            model = transactionsResponse.Parse<List<Transaction>>().ResponseContent.MapTransactions(model);
 
             var paymentResponse = await _gateway.GetPaymentSchedule(personReference, year);
             model = paymentResponse.Parse<CouncilTaxPaymentScheduleResponse>().ResponseContent.MapPayments(model);
