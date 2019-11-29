@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using Moq;
+using Newtonsoft.Json;
 using revs_bens_service.Services.CouncilTax;
 using revs_bens_service.Services.Models;
 using revs_bens_service.Utils.StorageProvider;
@@ -11,6 +12,10 @@ using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
 using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
 using Xunit;
+using Date = revs_bens_service.Services.Models.Date;
+using Instalment = StockportGovUK.NetStandard.Models.Civica.CouncilTax.Instalment;
+using PlaceDetail = revs_bens_service.Services.Models.PlaceDetail;
+using Transaction = revs_bens_service.Services.Models.Transaction;
 
 namespace revs_bens_service_tests.Service
 {
@@ -19,6 +24,90 @@ namespace revs_bens_service_tests.Service
         private readonly CouncilTaxService _service;
         private readonly Mock<ICivicaServiceGateway> _mockGateway = new Mock<ICivicaServiceGateway>();
         private readonly Mock<ICacheProvider> _cache = new Mock<ICacheProvider>();
+
+        #region Test models
+        
+        private readonly string _mockCouncilTaxAccountResponse = JsonConvert.SerializeObject(new CouncilTaxAccountResponse
+        {
+            AccountDetails = new AccountDetail
+            {
+                ActPayGrp = new ActPayGrp
+                {
+                    PaymentMethod = "DD",
+                    DirectDebit = "yes"
+                },
+                BankDetails = new BankAccountDetailsResponse
+                {
+                    AccountNumber = "12345678",
+                    AccountName = "testName"
+                }
+            },
+            CouncilTaxAccountBalance = 120.00M,
+            FinancialDetails = new FinancialDetailsResponse
+            {
+                YearTotals = new List<YearTotalResponse>
+                {
+                    new YearTotalResponse
+                    {
+                        TaxYear = 2018,
+                        TotalWriteoffs = 0.00M,
+                        TotalRefunds = 0.00M,
+                        BalanceOutstanding = 0.00M,
+                        TotalBenefits = 0.00M,
+                        TotalCharge = 120.00M,
+                        TotalCosts = 0.00M,
+                        TotalPayments = 120.00M,
+                        TotalPenalties = 0.00M,
+                        TotalTransfers = 0.00M,
+                        YearSummaries = new List<YearSummaryResponse>()
+                    }
+                }
+            },
+            CouncilTaxAccountReference = "123",
+            CtxActClosed = "FALSE"
+        });
+
+        private readonly string _mockTransactionsResponse = JsonConvert.SerializeObject(new TransactionResponse
+        {
+            Transaction = new List<Transaction>
+            {
+                new Transaction
+                {
+                    Date = new Date
+                    {
+                        Text = "12-12-2018"
+                    },
+                    Amount = "100.00",
+                    PlaceDetail = new PlaceDetail
+                    {
+                        PostCode = "SK1 3XE"
+                    },
+                    TranType = "LEVY",
+                    SubCode = "CASH"
+                }
+            }
+        });
+
+        private readonly string _mockPaymentsScheduleResponse = JsonConvert.SerializeObject(new CouncilTaxPaymentScheduleResponse
+        {
+            InstalmentList = new List<Instalment>
+            {
+                new Instalment
+                {
+                    DateDue = "12-01-2019",
+                    AmountDue = 60.00M,
+                    IsDirectDebit = "false"
+                },
+                new Instalment
+                {
+                    DateDue = "12-12-2018",
+                    AmountDue = 100.00M,
+                    IsDirectDebit = "true"
+                }
+            }
+        });
+
+        #endregion
 
         public CouncilTaxServiceTests()
         {
@@ -34,7 +123,7 @@ namespace revs_bens_service_tests.Service
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("{AccountDetails:{ActPayGrp:{PaymentMethod:'DD',DirectDebit:'yes'},BankDetails:null},CouncilTaxAccountBalance:0.00,FinancialDetails:{YearTotals: null},CouncilTaxAccountReference:'123',CtaxActClosed:'FALSE'}")
+                    Content = new StringContent(_mockCouncilTaxAccountResponse)
                 });
 
             _mockGateway
@@ -42,7 +131,7 @@ namespace revs_bens_service_tests.Service
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("{Transaction:[{Date:{Text:'12-12-2018'},Amount:'100.00',DAmount:100.00,PlaceDetail:null,TranType:'test',SubCode:'test'}]}")
+                    Content = new StringContent(_mockTransactionsResponse)
                 });
 
             _mockGateway
@@ -50,7 +139,7 @@ namespace revs_bens_service_tests.Service
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("{InstalmentList:[{DateDue:'12-12-2018',AmountDue:100.00,IsDirectDebit:'true'}],PaymentMethod:'test'}")
+                    Content = new StringContent(_mockPaymentsScheduleResponse)
                 });
 
             _mockGateway
@@ -81,57 +170,15 @@ namespace revs_bens_service_tests.Service
         }
 
         [Fact]
-        public async void GetCouncilTaxDetails_ShouldReturnModel()
+        public async void GetCouncilTaxDetails_ShouldReturnCouncilTaxDetailsModel()
         {
             // Arrange
-            var model = new CouncilTaxDetailsModel
-            {
-                PaymentMethod = "Direct Debit",
-                IsDirectDebitCustomer = true,
-                AmountOwing = 0.00M,
-                YearTotals = null,
-                Reference = "123",
-                PaymentSummary = new PaymentSummaryResponse
-                {
-                    NextPaymentDate = null,
-                    NextPaymentAmount = 0.0M
-                },
-                IsFinalNotice = null,
-                IsClosed = false,
-                AccountName = null,
-                AccountNumber = null,
-                LiabilityPeriodStart = null,
-                LiabilityPeriodEnd = null,
-                UpcomingPayments = new List<InstallmentModel>
-                {
-                    new InstallmentModel
-                    {
-                        Date = new DateTime(2018,12,12),
-                        Amount = -100M,
-                        IsDirectDebit = true
-                    }
-                },
-                PreviousPayments = new List<ITransactionModel>(),
-                TransactionHistory = new List<ITransactionModel>
-                {
-                    new TransactionModelExtension
-                    {
-                        Date = new DateTime(2018, 12, 12),
-                        Amount = 100M,
-                        Method = "Unknown",
-                        Description = "Other",
-                        Type = "Credit"
-                    }
-                },
-                HasBenefits = false
-            };
-
             _mockGateway
                 .Setup(_ => _.GetAccount(It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("{AccountDetails:{ActPayGrp:{PaymentMethod:'DD',DirectDebit:'yes'},BankDetails:null},CouncilTaxAccountBalance:0.00,FinancialDetails:{YearTotals: null},CouncilTaxAccountReference:'123',CtaxActClosed:'FALSE'}")
+                    Content = new StringContent(_mockCouncilTaxAccountResponse)
                 });
 
             _mockGateway
@@ -139,7 +186,7 @@ namespace revs_bens_service_tests.Service
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("{Transaction:[{Date:{Text:'12-12-2018'},Amount:'100.00',DAmount:100.00,PlaceDetail:null,TranType:'test',SubCode:'test'}]}")
+                    Content = new StringContent(_mockTransactionsResponse)
                 });
 
             _mockGateway
@@ -147,7 +194,7 @@ namespace revs_bens_service_tests.Service
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("{InstalmentList:[{DateDue:'12-12-2018',AmountDue:100.00,IsDirectDebit:'true'}],PaymentMethod:'test'}")
+                    Content = new StringContent(_mockPaymentsScheduleResponse)
                 });
 
             _mockGateway
@@ -182,7 +229,7 @@ namespace revs_bens_service_tests.Service
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("{AccountDetails:{ActPayGrp:{PaymentMethod:'DD',DirectDebit:'yes'},BankDetails:null},CouncilTaxAccountBalance:0.00,FinancialDetails:{YearTotals: null},CouncilTaxAccountReference:'123',CtaxActClosed:'FALSE'}")
+                    Content = new StringContent(_mockCouncilTaxAccountResponse)
                 });
 
             _mockGateway
@@ -190,7 +237,7 @@ namespace revs_bens_service_tests.Service
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("{Transaction:[{Date:{Text:'12-12-2018'},Amount:'100.00',DAmount:100.00,PlaceDetail:null,TranType:'test',SubCode:'test'}]}")
+                    Content = new StringContent(_mockTransactionsResponse)
                 });
 
             _mockGateway
@@ -198,7 +245,7 @@ namespace revs_bens_service_tests.Service
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("{InstalmentList:[{DateDue:'12-12-2018',AmountDue:100.00,IsDirectDebit:'true'}],PaymentMethod:'test'}")
+                    Content = new StringContent(_mockPaymentsScheduleResponse)
                 });
 
             _mockGateway
