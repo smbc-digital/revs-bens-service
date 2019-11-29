@@ -12,24 +12,21 @@ namespace revs_bens_service_tests.Service.Mapper
 {
     public class TransactionsMapperTests
     {
-        private TransactionResponse model = new TransactionResponse
+        private List<Transaction> model = new List<Transaction>
         {
-            Transaction = new List<Transaction>
+            new Transaction
             {
-                new Transaction
+                Date = new Date
                 {
-                    Date = new Date
-                    {
-                        Text = "12-12-2018"
-                    },
-                    Amount = "100.00",
-                    PlaceDetail = new PlaceDetail
-                    {
-                        PostCode = "SK1 3XE"
-                    },
-                    TranType = "LEVY",
-                    SubCode = "CASH"
-                }
+                    Text = "12-12-2018"
+                },
+                Amount = "100.00",
+                PlaceDetail = new PlaceDetail
+                {
+                    PostCode = "SK1 3XE"
+                },
+                TranType = "LEVY",
+                SubCode = "CASH"
             }
         };
 
@@ -41,7 +38,7 @@ namespace revs_bens_service_tests.Service.Mapper
         {
             // Arrange
             var result = new CouncilTaxDetailsModel();
-            model.Transaction[0].TranType = type;
+            model[0].TranType = type;
 
             // Act
             result = model.MapTransactions(result);
@@ -70,8 +67,8 @@ namespace revs_bens_service_tests.Service.Mapper
         {
             // Arrange
             var result = new CouncilTaxDetailsModel();
-            model.Transaction[0].TranType = type;
-            model.Transaction[0].Amount = amount;
+            model[0].TranType = type;
+            model[0].Amount = amount;
 
             // Act
             result = model.MapTransactions(result);
@@ -88,7 +85,7 @@ namespace revs_bens_service_tests.Service.Mapper
         {
             // Arrange
             var result = new CouncilTaxDetailsModel();
-            model.Transaction[0].Amount = amount;
+            model[0].Amount = amount;
 
             // Act
             result = model.MapTransactions(result);
@@ -107,7 +104,7 @@ namespace revs_bens_service_tests.Service.Mapper
             result = model.MapTransactions(result);
 
             // Assert
-            Assert.Equal(DateTime.Parse(model.Transaction[0].Date.Text), result.TransactionHistory[0].Date);
+            Assert.Equal(DateTime.Parse(model[0].Date.Text), result.TransactionHistory[0].Date);
         }
 
         [Theory]
@@ -130,7 +127,7 @@ namespace revs_bens_service_tests.Service.Mapper
         {
             // Arrange
             var result = new CouncilTaxDetailsModel();
-            model.Transaction[0].SubCode = subCode;
+            model[0].SubCode = subCode;
 
             // Act
             result = model.MapTransactions(result);
@@ -160,7 +157,7 @@ namespace revs_bens_service_tests.Service.Mapper
         {
             // Arrange
             var result = new CouncilTaxDetailsModel();
-            model.Transaction[0].TranType = type;
+            model[0].TranType = type;
 
             // Act
             result = model.MapTransactions(result);
