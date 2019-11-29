@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using revs_bens_service.Services.Models;
-using StockportGovUK.NetStandard.Models.Models.Civica.CouncilTax;
+using StockportGovUK.NetStandard.Models.RevsAndBens;
 
 namespace revs_bens_service.Services.CouncilTax.Mappers
 {
@@ -10,17 +10,27 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
     {
         public static CouncilTaxDetailsModel MapTransactions(this TransactionResponse transactionResponse, CouncilTaxDetailsModel model)
         {
-            var parsedTransactions = transactionResponse.Transaction.Select(transaction => new TransactionModelExtension
-            {
-                Date = DateTime.Parse(transaction.Date.Text),
-                Amount = Math.Abs(transaction.DAmount),
-                Method = Convert(transaction.SubCode),
-                Type = IsCredit(transaction.DAmount, transaction.TranType) ? "Credit" : "Debit",
-                Description = GetDescription(transaction.TranType, Convert(transaction.SubCode), transaction.PlaceDetail?.PostCode)
-            }).Distinct().ToArray();
+            model.TransactionHistory = transactionResponse.Transaction
+                .Where(t => t.TranType != "Charge" && t.TranType != "REFUNDS" && t.TranType != "PAYMENTS")
+                .Select(transaction => new TransactionModelExtension
+                {
+                    Date = DateTime.Parse(transaction.Date.Text),
+                    Amount = Math.Abs(transaction.DAmount),
+                    Method = Convert(transaction.SubCode),
+                    Type = IsCredit(transaction.DAmount, transaction.TranType) ? "Credit" : "Debit",
+                    Description = GetDescription(transaction.TranType, Convert(transaction.SubCode), transaction.PlaceDetail?.PostCode)
+                }).Distinct().ToList<ITransactionModel>();
 
-            model.TransactionHistory = parsedTransactions.Where(t => t.Type != "Charge" && t.Type != "REFUNDS" && t.Type != "PAYMENTS").ToList();
-            model.PreviousPayments = parsedTransactions.Where(t => t.Type == "PAYMENTS" || t.Type == "REFUNDS").ToList();
+            model.PreviousPayments = transactionResponse.Transaction
+                .Where(t => t.TranType == "PAYMENTS" || t.TranType == "REFUNDS")
+                .Select(transaction => new TransactionModelExtension
+                {
+                    Date = DateTime.Parse(transaction.Date.Text),
+                    Amount = Math.Abs(transaction.DAmount),
+                    Method = Convert(transaction.SubCode),
+                    Type = IsCredit(transaction.DAmount, transaction.TranType) ? "Credit" : "Debit",
+                    Description = GetDescription(transaction.TranType, Convert(transaction.SubCode), transaction.PlaceDetail?.PostCode)
+                }).Distinct().ToList<ITransactionModel>();
 
             return model;
         }

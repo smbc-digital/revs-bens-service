@@ -8,7 +8,8 @@ using revs_bens_service.Services.CouncilTax;
 using revs_bens_service.Services.Models;
 using revs_bens_service.Utils.StorageProvider;
 using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
-using StockportGovUK.NetStandard.Models.Models.Civica.CouncilTax;
+using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
+using StockportGovUK.NetStandard.Models.RevsAndBens;
 using Xunit;
 
 namespace revs_bens_service_tests.Service
@@ -110,8 +111,8 @@ namespace revs_bens_service_tests.Service
                         IsDirectDebit = true
                     }
                 },
-                PreviousPayments = new List<TransactionModelExtension>(),
-                TransactionHistory = new List<TransactionModelExtension>
+                PreviousPayments = new List<ITransactionModel>(),
+                TransactionHistory = new List<ITransactionModel>
                 {
                     new TransactionModelExtension
                     {

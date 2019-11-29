@@ -1,4 +1,5 @@
-﻿using revs_bens_service.Services.Models;
+﻿using System.Collections.Generic;
+using revs_bens_service.Services.Models;
 using revs_bens_service.Utils.Parsers;
 using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
 using System.Threading.Tasks;
@@ -6,7 +7,8 @@ using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 using revs_bens_service.Services.CouncilTax.Mappers;
 using revs_bens_service.Utils.StorageProvider;
-using StockportGovUK.NetStandard.Models.Models.Civica.CouncilTax;
+using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
+using CouncilTaxDetailsModel = StockportGovUK.NetStandard.Models.RevsAndBens.CouncilTaxDetailsModel;
 
 namespace revs_bens_service.Services.CouncilTax
 {

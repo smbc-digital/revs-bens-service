@@ -1,5 +1,5 @@
-﻿using revs_bens_service.Services.Models;
-using StockportGovUK.NetStandard.Models.Models.Civica.CouncilTax;
+﻿using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
+using CouncilTaxDetailsModel = StockportGovUK.NetStandard.Models.RevsAndBens.CouncilTaxDetailsModel;
 
 namespace revs_bens_service.Services.CouncilTax.Mappers
 {

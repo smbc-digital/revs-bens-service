@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using StockportGovUK.NetStandard.Models.Models.RevsAndBens;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
 
 namespace revs_bens_service.Services.Benefits.Mappers
@@ -24,7 +23,7 @@ namespace revs_bens_service.Services.Benefits.Mappers
         {
             return documents.Select(_ => new BenefitsDocument
             {
-                ClaimNumber = _.ClaimNumber,
+                AccountReference = _.AccountReference,
                 DateCreated = _.DateCreated,
                 Downloaded = _.Downloaded,
                 Id = _.DocumentId,
@@ -50,9 +49,9 @@ namespace revs_bens_service.Services.Benefits.Mappers
             .ToList();
         }
 
-        private static NextPayment SetNextPayment(BenefitsClaim claim)
+        private static ClaimNextPayment SetNextPayment(BenefitsClaim claim)
         {
-            return new NextPayment
+            return new ClaimNextPayment
             {
                 Amount = claim.NextPayment.Amount,
                 Method = claim.NextPayment.Method,

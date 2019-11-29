@@ -2,9 +2,9 @@
 using System.Net;
 using System.Net.Http;
 using revs_bens_service.Services.CouncilTax.Mappers;
-using revs_bens_service.Services.Models;
 using revs_bens_service.Utils.Parsers;
-using StockportGovUK.NetStandard.Models.Models.Civica.CouncilTax;
+using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
+using StockportGovUK.NetStandard.Models.RevsAndBens;
 using Xunit;
 
 namespace revs_bens_service_tests.Service.Mapper
@@ -22,10 +22,10 @@ namespace revs_bens_service_tests.Service.Mapper
                 Content = new StringContent("{AccountDetails:{ActPayGrp:{PaymentMethod:'DD',DirectDebit:'yes'},BankDetails:{AccountNumber:'12345678', AccountName:'testName'}},CouncilTaxAccountBalance:120.00,FinancialDetails:{YearTotals: [{TaxYear:2018,BalanceOutstanding:0.00,TotalCharge:1200.00,TotalPayments:1200.00,TotalBenefits:0.00,TotalCosts:0.00,TotalRefunds:0.00,TotalWriteoffs:0.00,TotalTransfers:0.00,TotalPenalties:0.00,YearSummaries:[]}]},CouncilTaxAccountReference:'123',CtaxActClosed:'FALSE'}")
             };
 
-            var parsedResponse = gatewayResponse.Parse<CouncilTaxAccountResponse>();
+            var parsedResponse = gatewayResponse.Parse<CouncilTaxAccountResponse>().ResponseContent;
 
             // Act
-            result = parsedResponse.ResponseContent.MapAccount(result);
+            result = parsedResponse.MapAccount(result, 2018);
             var actualYearTotals = result.YearTotals.ToList();
 
             // Assert
@@ -56,7 +56,7 @@ namespace revs_bens_service_tests.Service.Mapper
             var parsedResponse = gatewayResponse.Parse<CouncilTaxAccountResponse>();
 
             // Act
-            result = parsedResponse.ResponseContent.MapAccount(result);
+            result = parsedResponse.ResponseContent.MapAccount(result, 2018);
             var actualYearTotals = result.YearTotals.ToList();
 
             // Assert

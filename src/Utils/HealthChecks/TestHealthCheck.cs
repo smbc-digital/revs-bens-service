@@ -7,9 +7,9 @@ namespace revs_bens_service.Utils.HealthChecks
 {
     public class TestHealthCheck : IHealthCheck
     {
-        public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+        public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
         {
-            return HealthCheckResult.Healthy(null, new Dictionary<string, object> {{"Result", "All working!"}});
+            return Task.FromResult(HealthCheckResult.Healthy(null, new Dictionary<string, object> {{"Result", "All working!"}}));
         }
     }
 }

@@ -1,8 +1,8 @@
-﻿using StockportGovUK.NetStandard.Models.Models.RevsAndBens;
+﻿using StockportGovUK.NetStandard.Models.RevsAndBens;
 
 namespace revs_bens_service.Services.Models
 {
-    public class TransactionModelExtension : TransactionModel
+    public class TransactionModelExtension : TransactionModel, ITransactionModel
     {
         public override bool Equals(object obj)
         {

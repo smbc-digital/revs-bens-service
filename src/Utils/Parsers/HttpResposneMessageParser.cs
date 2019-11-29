@@ -16,7 +16,7 @@ namespace revs_bens_service.Utils.Parsers
                 var content = responseMessage.Content.ReadAsStringAsync().Result;
                 deserializedObject = JsonConvert.DeserializeObject<T>(content);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 deserializedObject = default(T);
             }

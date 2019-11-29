@@ -3,7 +3,6 @@ using Moq;
 using revs_bens_service.Controllers;
 using revs_bens_service.Services.Benefits;
 using revs_bens_service.Services.CouncilTax;
-using revs_bens_service.Services.Models;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
 using Xunit;
 
