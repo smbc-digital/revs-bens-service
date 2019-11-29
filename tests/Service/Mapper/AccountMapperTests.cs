@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using revs_bens_service.Services.CouncilTax.Mappers;
@@ -11,21 +12,54 @@ namespace revs_bens_service_tests.Service.Mapper
 {
     public class AccountMapperTests
     {
+        private CouncilTaxAccountResponse model = new CouncilTaxAccountResponse
+        {
+            AccountDetails = new AccountDetail
+            {
+                ActPayGrp = new ActPayGrp
+                {
+                    PaymentMethod = "DD",
+                    DirectDebit = "yes"
+                },
+                BankDetails = new BankAccountDetailsResponse
+                {
+                    AccountNumber = "12345678",
+                    AccountName = "testName"
+                }
+            },
+            CouncilTaxAccountBalance = 120.00M,
+            FinancialDetails = new FinancialDetailsResponse
+            {
+                YearTotals = new List<YearTotalResponse>
+                {
+                    new YearTotalResponse
+                    {
+                        TaxYear = 2018,
+                        TotalWriteoffs = 0.00M,
+                        TotalRefunds = 0.00M,
+                        BalanceOutstanding = 0.00M,
+                        TotalBenefits = 0.00M,
+                        TotalCharge = 120.00M,
+                        TotalCosts = 0.00M,
+                        TotalPayments = 120.00M,
+                        TotalPenalties = 0.00M,
+                        TotalTransfers = 0.00M,
+                        YearSummaries = new List<YearSummaryResponse>()
+                    }
+                }
+            },
+            CouncilTaxAccountReference = "123",
+            CtxActClosed = "FALSE"
+        };
+
         [Fact]
         public void MapAccount_ShouldReturnMappedAccount()
         {
             // Arrange
             var result = new CouncilTaxDetailsModel();
-            var gatewayResponse = new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent("{AccountDetails:{ActPayGrp:{PaymentMethod:'DD',DirectDebit:'yes'},BankDetails:{AccountNumber:'12345678', AccountName:'testName'}},CouncilTaxAccountBalance:120.00,FinancialDetails:{YearTotals: [{TaxYear:2018,BalanceOutstanding:0.00,TotalCharge:1200.00,TotalPayments:1200.00,TotalBenefits:0.00,TotalCosts:0.00,TotalRefunds:0.00,TotalWriteoffs:0.00,TotalTransfers:0.00,TotalPenalties:0.00,YearSummaries:[]}]},CouncilTaxAccountReference:'123',CtaxActClosed:'FALSE'}")
-            };
-
-            var parsedResponse = gatewayResponse.Parse<CouncilTaxAccountResponse>();
 
             // Act
-            result = parsedResponse.ResponseContent.MapAccount(result);
+            result = model.MapAccount(result);
             var actualYearTotals = result.YearTotals.ToList();
 
             // Assert
@@ -47,16 +81,26 @@ namespace revs_bens_service_tests.Service.Mapper
         {
             // Arrange
             var result = new CouncilTaxDetailsModel();
-            var gatewayResponse = new HttpResponseMessage
+            model.FinancialDetails.YearTotals[0].YearSummaries = new List<YearSummaryResponse>
             {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent("{AccountDetails:{ActPayGrp:{PaymentMethod:'DD',DirectDebit:'yes'},BankDetails:{AccountNumber:'12345678',AccountName:'testName'}},CouncilTaxAccountBalance:120.00,FinancialDetails:{YearTotals:[{TaxYear:2018,BalanceOutstanding:0.00,TotalCharge:1200.00,TotalPayments:1200.00,TotalBenefits:0.00,TotalCosts:0.00,TotalRefunds:0.00,TotalWriteoffs:0.00,TotalTransfers:0.00,TotalPenalties:0.00,YearSummaries:[{Stage:{StageCode:'test',StageDate:'12-12-2018'},NextPayment:{NextPaymentDate:'12-12-2018',NextPaymentAmount:'80.00'}}]}]},CouncilTaxAccountReference:'123',CtxActClosed:'TRUE'}")
+                new YearSummaryResponse
+                {
+                    Stage = new StageResponse
+                    {
+                        StageCode = "test",
+                        StageDate = "12-12-2018"
+                    },
+                    NextPayment = new PaymentSummaryResponse
+                    {
+                        NextPaymentDate = "12-12-2018",
+                        NextPaymentAmount = 80.00M
+                    }
+                }
             };
-
-            var parsedResponse = gatewayResponse.Parse<CouncilTaxAccountResponse>();
+            model.CtxActClosed = "TRUE";
 
             // Act
-            result = parsedResponse.ResponseContent.MapAccount(result);
+            result = model.MapAccount(result);
             var actualYearTotals = result.YearTotals.ToList();
 
             // Assert
