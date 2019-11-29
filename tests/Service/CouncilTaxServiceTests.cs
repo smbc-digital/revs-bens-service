@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
 using Moq;
 using Newtonsoft.Json;
 using revs_bens_service.Services.CouncilTax;
@@ -12,6 +10,7 @@ using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
 using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
 using Xunit;
+using Band = StockportGovUK.NetStandard.Models.Civica.CouncilTax.Band;
 using Date = revs_bens_service.Services.Models.Date;
 using Instalment = StockportGovUK.NetStandard.Models.Civica.CouncilTax.Instalment;
 using PlaceDetail = revs_bens_service.Services.Models.PlaceDetail;
@@ -26,7 +25,18 @@ namespace revs_bens_service_tests.Service
         private readonly Mock<ICacheProvider> _cache = new Mock<ICacheProvider>();
 
         #region Test models
-        
+
+        private readonly string _mockCouncilTaxAccountsResponse = JsonConvert.SerializeObject(new List<CtaxActDetails>
+        {
+            new CtaxActDetails
+            {
+                AccountStatus = "status",
+                CtaxActAddress = "address",
+                CtaxActRef = "123",
+                CtaxBalance = "100.00"
+            }
+        });
+
         private readonly string _mockCouncilTaxAccountResponse = JsonConvert.SerializeObject(new CouncilTaxAccountResponse
         {
             AccountDetails = new AccountDetail
@@ -107,17 +117,31 @@ namespace revs_bens_service_tests.Service
             }
         });
 
+        private readonly string _mockPlacesResponse = JsonConvert.SerializeObject(new Places
+        {
+            ChargeDetails = null,
+            Band = new Band
+            {
+                Text = "A"
+            },
+            Address1 = "address1",
+            Address2 = "address2"
+        });
+
         #endregion
 
         public CouncilTaxServiceTests()
         {
             _service = new CouncilTaxService(_mockGateway.Object, _cache.Object);
-        }
 
-        [Fact]
-        public async void GetCouncilTaxDetails_ShouldCallGateway()
-        {
-            // Arrange
+            _mockGateway
+                .Setup(_ => _.GetAccounts(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(_mockCouncilTaxAccountsResponse)
+                });
+
             _mockGateway
                 .Setup(_ => _.GetAccount(It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(new HttpResponseMessage
@@ -147,7 +171,15 @@ namespace revs_bens_service_tests.Service
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("{ChargeDetails:null}")
+                    Content = new StringContent(_mockPlacesResponse)
+                });
+
+            _mockGateway
+                .Setup(_ => _.GetDocuments(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent("[]")
                 });
 
             _mockGateway
@@ -157,6 +189,12 @@ namespace revs_bens_service_tests.Service
                     StatusCode = HttpStatusCode.OK,
                     Content = new StringContent("false")
                 });
+        }
+
+        [Fact]
+        public async void GetCouncilTaxDetails_ShouldCallGateway()
+        {
+            // Arrange
 
             // Act
             await _service.GetCouncilTaxDetails("123", "5001111234", 2018);
@@ -173,45 +211,6 @@ namespace revs_bens_service_tests.Service
         public async void GetCouncilTaxDetails_ShouldReturnCouncilTaxDetailsModel()
         {
             // Arrange
-            _mockGateway
-                .Setup(_ => _.GetAccount(It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(_mockCouncilTaxAccountResponse)
-                });
-
-            _mockGateway
-                .Setup(_ => _.GetAllTransactionsForYear(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(_mockTransactionsResponse)
-                });
-
-            _mockGateway
-                .Setup(_ => _.GetPaymentSchedule(It.IsAny<string>(), It.IsAny<int>()))
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(_mockPaymentsScheduleResponse)
-                });
-
-            _mockGateway
-                .Setup(_ => _.GetCurrentProperty(It.IsAny<string>()))
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("{ChargeDetails:null}")
-                });
-
-            _mockGateway
-                .Setup(_ => _.IsBenefitsClaimant(It.IsAny<string>()))
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("false")
-                });
 
             // Act
             var result = await _service.GetCouncilTaxDetails("123", "5001111234", 2018);
@@ -224,45 +223,6 @@ namespace revs_bens_service_tests.Service
         public async void GetCouncilTaxDetails_ShouldCallCacheProvider()
         {
             // Arrange
-            _mockGateway
-                .Setup(_ => _.GetAccount(It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(_mockCouncilTaxAccountResponse)
-                });
-
-            _mockGateway
-                .Setup(_ => _.GetAllTransactionsForYear(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(_mockTransactionsResponse)
-                });
-
-            _mockGateway
-                .Setup(_ => _.GetPaymentSchedule(It.IsAny<string>(), It.IsAny<int>()))
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(_mockPaymentsScheduleResponse)
-                });
-
-            _mockGateway
-                .Setup(_ => _.GetCurrentProperty(It.IsAny<string>()))
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("{ChargeDetails:null}")
-                });
-
-            _mockGateway
-                .Setup(_ => _.IsBenefitsClaimant(It.IsAny<string>()))
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("false")
-                });
 
             _cache
                 .Setup(_ => _.SetStringAsync(It.IsAny<string>(), It.IsAny<string>()));

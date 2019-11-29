@@ -2,6 +2,7 @@
 using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
 using Xunit;
+using Band = StockportGovUK.NetStandard.Models.Civica.CouncilTax.Band;
 
 namespace revs_bens_service_tests.Service.Mapper
 {
@@ -16,7 +17,13 @@ namespace revs_bens_service_tests.Service.Mapper
                     Start = "01-04-2017",
                     End = "31-03-2018"
                 }
-            }
+            },
+            Band = new Band
+            {
+                Text = "A"
+            },
+            Address1 = "address1",
+            Address2 = "address2"
         };
 
         [Fact]
@@ -31,6 +38,8 @@ namespace revs_bens_service_tests.Service.Mapper
             // Assert
             Assert.Equal("01-04-2017", result.LiabilityPeriodStart);
             Assert.Equal("31-03-2018", result.LiabilityPeriodEnd);
+            Assert.Equal("A", result.TaxBand);
+            Assert.Equal("address1, address2", result.Property);
         }
 
         [Fact]
@@ -46,6 +55,8 @@ namespace revs_bens_service_tests.Service.Mapper
             // Assert
             Assert.Null(result.LiabilityPeriodStart);
             Assert.Null(result.LiabilityPeriodEnd);
+            Assert.Equal("A", result.TaxBand);
+            Assert.Equal("address1, address2", result.Property);
         }
 
         [Fact]
@@ -61,6 +72,8 @@ namespace revs_bens_service_tests.Service.Mapper
             // Assert
             Assert.Null(result.LiabilityPeriodStart);
             Assert.Null(result.LiabilityPeriodEnd);
+            Assert.Equal("A", result.TaxBand);
+            Assert.Equal("address1, address2", result.Property);
         }
     }
 }

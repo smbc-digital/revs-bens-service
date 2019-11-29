@@ -35,7 +35,7 @@ namespace revs_bens_service_tests.Service.Mapper
 
         [Theory]
         [InlineData("PAYMENTS")]
-        [InlineData("CHARGE")]
+        [InlineData("Charge")]
         [InlineData("REFUNDS")]
         public void MapTransactions_ShouldReturnTransactionHistory_WithEmptyTransactionList(string type)
         {
