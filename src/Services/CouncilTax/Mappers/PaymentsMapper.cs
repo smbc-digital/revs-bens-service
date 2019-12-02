@@ -13,7 +13,8 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
             {
                 Amount = _.AmountDue,
                 Date = DateTime.Parse(_.DateDue),
-                IsDirectDebit = bool.Parse(_.IsDirectDebit)
+                //IsDirectDebit = bool.Parse(_.IsDirectDebit)
+                IsDirectDebit = _.IsDirectDebit.Equals("Y") ? true : false
             }).ToList();
 
             return model;
