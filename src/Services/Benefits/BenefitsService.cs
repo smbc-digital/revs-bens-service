@@ -104,7 +104,7 @@ namespace revs_bens_service.Services.Benefits
                 .Where(_ => ToFinancialYear(DateTime.Parse(_.PeriodStart)) == currentTaxYear)
                 .ToList();
 
-            var accountReference = currentYearPayments.FirstOrDefault() != null
+            var accountReference = currentYearPayments.FirstOrDefault() != null 
                 ? currentYearPayments.First().CouncilTaxReference
                 : "N/A";
 
