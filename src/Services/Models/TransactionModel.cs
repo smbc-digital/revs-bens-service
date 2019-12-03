@@ -2,7 +2,7 @@
 
 namespace revs_bens_service.Services.Models
 {
-    public class TransactionModelExtension : TransactionModel, ITransactionModel
+    public class TransactionModelExtension : TransactionModel
     {
         public override bool Equals(object obj)
         {

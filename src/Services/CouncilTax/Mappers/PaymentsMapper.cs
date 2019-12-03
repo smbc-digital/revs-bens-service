@@ -11,9 +11,9 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
         {
             model.UpcomingPayments = paymentResponse.InstalmentList.Select(_ => new StockportGovUK.NetStandard.Models.RevsAndBens.InstallmentModel
             {
-                Amount = _.AmountDue,
+                Amount = Math.Abs(_.AmountDue),
                 Date = DateTime.Parse(_.DateDue),
-                IsDirectDebit = bool.Parse(_.IsDirectDebit)
+                IsDirectDebit = _.IsDirectDebit.Equals("Y")
             }).ToList();
 
             return model;

@@ -26,11 +26,13 @@ namespace revs_bens_service.Services.CouncilTax
 
         public async Task<CouncilTaxDetailsModel> GetCouncilTaxDetails(string personReference, string accountReference, int year)
         {
-            var cacheResponse = await _cacheProvider.GetStringAsync($"{personReference}-{CacheKeys.CouncilTaxDetails}");
+            var key = $"{personReference}-{accountReference}-{year}-{CacheKeys.CouncilTaxDetails}";
+            var cacheResponse = await _cacheProvider.GetStringAsync(key);
 
             if (!string.IsNullOrEmpty(cacheResponse))
             {
-                return JsonConvert.DeserializeObject<CouncilTaxDetailsModel>(cacheResponse);
+                var cachedResponse = JsonConvert.DeserializeObject<CouncilTaxDetailsModel>(cacheResponse);
+                return cachedResponse;
             }
 
             var model = new CouncilTaxDetailsModel();
@@ -56,7 +58,7 @@ namespace revs_bens_service.Services.CouncilTax
             var isBenefitsResponse = await _gateway.IsBenefitsClaimant(personReference);
             model.HasBenefits = isBenefitsResponse.Parse<bool>().ResponseContent;
 
-            _ = _cacheProvider.SetStringAsync($"{personReference}-{CacheKeys.CouncilTaxDetails}", JsonConvert.SerializeObject(model));
+            _ = _cacheProvider.SetStringAsync(key, JsonConvert.SerializeObject(model));
 
             return model;
         }

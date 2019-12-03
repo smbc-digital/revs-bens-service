@@ -21,7 +21,6 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="StockportGovUK.AspNetCore.Attributes.TokenAuthentication" Version="0.*" />
     <PackageReference Include="StockportGovUK.AspNetCore.Availability" Version="0.*" />
-    <PackageReference Include="StockportGovUK.AspNetCore.Gateways" Version="0.8.3-prerelease81" />
     <PackageReference Include="StockportGovUK.AspNetCore.Logging.Elasticsearch.Aws" Version="0.*" />
     <PackageReference Include="StockportGovUK.AspNetCore.Middleware.ExceptionHandling" Version="0.*" />
     <PackageReference Include="System.Text.RegularExpressions" Version="4.*" />
@@ -36,5 +35,14 @@
 
   <ItemGroup>
     <None Include="License.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="StockportGovUK.AspNetCore.Gateways">
+      <HintPath>..\..\StockportGovUK.AspNetCore.Gateways\bin\Debug\netcoreapp2.2\StockportGovUK.AspNetCore.Gateways.dll</HintPath>
+    </Reference>
+    <Reference Include="StockportGovUK.NetStandard.Models">
+      <HintPath>..\..\StockportGovUk.NetStandard.Models\bin\Debug\netcoreapp2.2\StockportGovUK.NetStandard.Models.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

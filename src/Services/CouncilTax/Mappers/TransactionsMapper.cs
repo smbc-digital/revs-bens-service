@@ -18,9 +18,9 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
                     Date = DateTime.Parse(transaction.Date.Text),
                     Amount = Math.Abs(transaction.DAmount),
                     Method = Convert(transaction.SubCode),
-                    Type = IsCredit(transaction.DAmount, transaction.TranType) ? "Credit" : "Debit",
+                    Type = IsCredit(transaction.DAmount, transaction.TranType) ? ETransactionType.Credit : ETransactionType.Debit,
                     Description = GetDescription(transaction.TranType, Convert(transaction.SubCode), transaction.PlaceDetail?.PostCode)
-                }).Distinct().ToList<ITransactionModel>();
+                }).Distinct().ToList<TransactionModel>();
 
             model.PreviousPayments = transactionResponse
                 .Where(t => t.TranType == "PAYMENTS" || t.TranType == "REFUNDS")
@@ -29,9 +29,9 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
                     Date = DateTime.Parse(transaction.Date.Text),
                     Amount = Math.Abs(transaction.DAmount),
                     Method = Convert(transaction.SubCode),
-                    Type = IsCredit(transaction.DAmount, transaction.TranType) ? "Credit" : "Debit",
+                    Type = IsCredit(transaction.DAmount, transaction.TranType) ? ETransactionType.Credit : ETransactionType.Debit,
                     Description = GetDescription(transaction.TranType, Convert(transaction.SubCode), transaction.PlaceDetail?.PostCode)
-                }).Distinct().ToList<ITransactionModel>();
+                }).Distinct().ToList<TransactionModel>();
 
             return model;
         }
