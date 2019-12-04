@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
-using revs_bens_service.Services.Models;
 using revs_bens_service.Utils.Parsers;
 using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 using revs_bens_service.Services.CouncilTax.Mappers;
 using revs_bens_service.Utils.StorageProvider;
@@ -37,11 +35,11 @@ namespace revs_bens_service.Services.CouncilTax
 
             var model = new CouncilTaxDetailsModel();
 
-            var accountsResponse = await _gateway.GetAccounts(personReference);
-            model = accountsResponse.Parse<List<CtaxActDetails>>().ResponseContent.MapAccounts(model);
-
             var accountResponse = await _gateway.GetAccount(personReference, accountReference);
             model = accountResponse.Parse<CouncilTaxAccountResponse>().ResponseContent.MapAccount(model, year);
+
+            var accountsResponse = await _gateway.GetAccounts(personReference);
+            model = accountsResponse.Parse<List<CtaxActDetails>>().ResponseContent.MapAccounts(model);
 
             var transactionsResponse = await _gateway.GetAllTransactionsForYear(personReference, accountReference, year);
             model = transactionsResponse.Parse<List<Transaction>>().ResponseContent.MapTransactions(model);
@@ -49,7 +47,7 @@ namespace revs_bens_service.Services.CouncilTax
             var paymentResponse = await _gateway.GetPaymentSchedule(personReference, year);
             model = paymentResponse.Parse<CouncilTaxPaymentScheduleResponse>().ResponseContent.MapPayments(model);
 
-            var currentPropertyResponse = await _gateway.GetCurrentProperty(personReference);
+            var currentPropertyResponse = await _gateway.GetCurrentProperty(personReference, accountReference);
             model = currentPropertyResponse.Parse<Places>().ResponseContent.MapCurrentProperty(model);
 
             var documentsResponse = await _gateway.GetDocuments(personReference);

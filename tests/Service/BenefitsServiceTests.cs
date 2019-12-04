@@ -79,12 +79,88 @@ namespace revs_bens_service_tests.Service
 
         private readonly string mockListPaymentDetail = JsonConvert.SerializeObject(new List<PaymentDetail>());
 
-        private readonly string mockReceivedYearTotal = JsonConvert.SerializeObject(null);
+        private readonly string mockReceivedYearTotal = JsonConvert.SerializeObject(new RecievedYearTotal
+        {
+            BalanceOutstanding = "10.2",
+            TotalBenefits = "323.25",
+            TotalCharge = "10.25",
+            TotalPayments = "400.25"
+        });
 
+        private readonly string mockListCouncilTaxPayments = JsonConvert.SerializeObject(new List<PaymentDetail>
+        {
+            new PaymentDetail
+            {
+                CouncilTaxReference = "500000000",
+                OnAct = "test",
+                DatePaid = "02-12-2019",
+                PayAmount = "20.00",
+                Payee = "payee",
+                PayType = "test-type",
+                PeriodStart = "02-12-2019",
+                PeriodEnd = "02-12-2020",
+            }
+        });
         #endregion
 
         public BenefitsServiceTests()
         {
+            _mockGateway
+             .Setup(_ => _.GetBenefits("test"))
+             .ReturnsAsync(new HttpResponseMessage
+             {
+                 StatusCode = HttpStatusCode.OK,
+                 Content = new StringContent("test")
+             });
+
+            _mockGateway
+              .Setup(_ => _.GetBenefits("test-ref"))
+              .ReturnsAsync(new HttpResponseMessage
+              {
+                  StatusCode = HttpStatusCode.OK,
+                  Content = new StringContent(mockListBenefitClaimSummary)
+              });
+
+            _mockGateway
+              .Setup(_ => _.GetBenefitDetails("test-ref", "123", "123"))
+              .ReturnsAsync(new HttpResponseMessage
+              {
+                  StatusCode = HttpStatusCode.OK,
+                  Content = new StringContent(mockBenefitsClaim)
+              });
+
+            _mockGateway
+                .Setup(_ => _.GetDocuments("test-ref"))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(mockCouncilTaxDocument)
+                });
+
+            _mockGateway
+                .Setup(_ => _.GetHousingBenefitPaymentHistory("test-ref"))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(mockListCouncilTaxPayments)
+                });
+
+            _mockGateway
+               .Setup(_ => _.GetCouncilTaxBenefitPaymentHistory("test-ref"))
+               .ReturnsAsync(new HttpResponseMessage
+               {
+                   StatusCode = HttpStatusCode.OK,
+                   Content = new StringContent(mockListCouncilTaxPayments)
+               });
+
+            _mockGateway
+              .Setup(_ => _.GetAccountDetailsForYear("test-ref", "500000000", 2019))
+              .ReturnsAsync(new HttpResponseMessage
+              {
+                  StatusCode = HttpStatusCode.OK,
+                  Content = new StringContent(mockReceivedYearTotal)
+              });
+
             _service = new BenefitsService(_mockGateway.Object, _cache.Object);
         }
 
@@ -122,65 +198,63 @@ namespace revs_bens_service_tests.Service
         [Fact]
         public async void GetBenefits_ShouldCallGateway()
         {
+            // Act
+            await _service.GetBenefits("test-ref");
+
+            // Assert
+            _mockGateway.Verify(_ => _.GetBenefits("test-ref"), Times.Once);
+            _mockGateway.Verify(_ => _.GetBenefitDetails("test-ref", "123", "123"), Times.Once);
+            _mockGateway.Verify(_ => _.GetDocuments("test-ref"), Times.Once);
+            _mockGateway.Verify(_ => _.GetHousingBenefitPaymentHistory("test-ref"), Times.Once);
+            _mockGateway.Verify(_ => _.GetCouncilTaxBenefitPaymentHistory("test-ref"), Times.AtLeastOnce);
+            _mockGateway.Verify(_ => _.GetAccountDetailsForYear("test-ref", "500000000", 2019), Times.Once);
+        }
+
+        [Fact]
+        public async void GetBenefits_ShouldCallCacheProvider_WithGetStringAsync()
+        {
             // Arrange
-            _mockGateway
-                .Setup(_ => _.GetBenefits(It.IsAny<string>()))
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(mockListBenefitClaimSummary)
-                });
-
-            _mockGateway
-                .Setup(_ => _.GetBenefitDetails(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(mockBenefitsClaim)
-                });
-
-            _mockGateway
-                .Setup(_ => _.GetDocuments(It.IsAny<string>()))
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(mockCouncilTaxDocument)
-                });
-
-            _mockGateway
-                .Setup(_ => _.GetHousingBenefitPaymentHistory(It.IsAny<string>()))
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(mockListPaymentDetail)
-                });
-
-            _mockGateway
-                .Setup(_ => _.GetCouncilTaxBenefitPaymentHistory(It.IsAny<string>()))
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(mockListPaymentDetail)
-                });
-
-            _mockGateway
-                .Setup(_ => _.GetAccountDetailsForYear(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(mockReceivedYearTotal)
-                });
+            var model = JsonConvert.SerializeObject(new Claim());
+            _cache
+                .Setup(_ => _.GetStringAsync(It.IsAny<string>()))
+                .ReturnsAsync(model);
 
             // Act
             await _service.GetBenefits(It.IsAny<string>());
 
             // Assert
-            _mockGateway.Verify(_ => _.GetBenefits(It.IsAny<string>()), Times.Once);
-            _mockGateway.Verify(_ => _.GetBenefitDetails(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-            _mockGateway.Verify(_ => _.GetDocuments(It.IsAny<string>()), Times.Once);
-            _mockGateway.Verify(_ => _.GetHousingBenefitPaymentHistory(It.IsAny<string>()), Times.Once);
-            _mockGateway.Verify(_ => _.GetCouncilTaxBenefitPaymentHistory(It.IsAny<string>()), Times.AtLeastOnce);
-            _mockGateway.Verify(_ => _.GetAccountDetailsForYear(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()), Times.Once);
+            _cache.Verify(_ => _.GetStringAsync(It.IsAny<string>()), Times.Once);
+        }
+
+
+        [Fact]
+        public async void GetBenefits_ShouldReturnNull_IfClaimsAreNull()
+        {
+            //Act
+            var result = await _service.GetBenefits("test");
+
+            //Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async void GetBenefits_GetAccount_WithStatusSetToCurrent()
+        {
+            // Act
+            var result = await _service.GetBenefits("test-ref");
+
+            // Assert
+            Assert.Equal("Current", result.Details.Status);
+        }
+
+        [Fact]
+        public async void GetBenefits_ShoulCallCacheProvider_WithSetStringAsync()
+        {
+            // Act
+            await _service.GetBenefits("test-ref");
+
+            // Assert
+            _cache.Verify(_ => _.SetStringAsync(It.IsAny<string>(), It.IsAny<string>()));
         }
     }
 }

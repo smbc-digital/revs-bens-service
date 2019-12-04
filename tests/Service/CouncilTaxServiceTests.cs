@@ -77,24 +77,21 @@ namespace revs_bens_service_tests.Service
             CtxActClosed = "FALSE"
         });
 
-        private readonly string _mockTransactionsResponse = JsonConvert.SerializeObject(new TransactionResponse
+        private readonly string _mockTransactionsResponse = JsonConvert.SerializeObject(new List<Transaction>
         {
-            Transaction = new List<Transaction>
+            new Transaction
             {
-                new Transaction
+                Date = new Date
                 {
-                    Date = new Date
-                    {
-                        Text = "12-12-2018"
-                    },
-                    Amount = "100.00",
-                    PlaceDetail = new PlaceDetail
-                    {
-                        PostCode = "SK1 3XE"
-                    },
-                    TranType = "LEVY",
-                    SubCode = "CASH"
-                }
+                    Text = "12-12-2018"
+                },
+                Amount = "100.00",
+                PlaceDetail = new PlaceDetail
+                {
+                    PostCode = "SK1 3XE"
+                },
+                TranType = "LEVY",
+                SubCode = "CASH"
             }
         });
 

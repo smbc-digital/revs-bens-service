@@ -21,13 +21,13 @@ namespace revs_bens_service_tests.Service.Mapper
                 {
                     DateDue = "12-01-2019",
                     AmountDue = 60.00M,
-                    IsDirectDebit = "false"
+                    IsDirectDebit = "N"
                 },
                 new Instalment
                 {
                     DateDue = "12-12-2018",
                     AmountDue = 100.00M,
-                    IsDirectDebit = "true"
+                    IsDirectDebit = "Y"
                 }
             }
         };

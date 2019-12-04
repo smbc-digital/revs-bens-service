@@ -110,7 +110,8 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
             "exemption",
             "disabled",
             "costs",
-            "disregard"
+            "disregard",
+            "payments"
         };
 
         private static readonly Dictionary<string, string> PaymentMethod = new Dictionary<string, string>() {
