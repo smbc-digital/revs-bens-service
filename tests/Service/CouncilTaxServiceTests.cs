@@ -164,7 +164,7 @@ namespace revs_bens_service_tests.Service
                 });
 
             _mockGateway
-                .Setup(_ => _.GetCurrentProperty(It.IsAny<string>()))
+                .Setup(_ => _.GetCurrentProperty(It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
@@ -200,7 +200,7 @@ namespace revs_bens_service_tests.Service
             _mockGateway.Verify(_ => _.GetAccount(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
             _mockGateway.Verify(_ => _.GetAllTransactionsForYear(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()), Times.Once);
             _mockGateway.Verify(_ => _.GetPaymentSchedule(It.IsAny<string>(), It.IsAny<int>()), Times.Once);
-            _mockGateway.Verify(_ => _.GetCurrentProperty(It.IsAny<string>()), Times.Once);
+            _mockGateway.Verify(_ => _.GetCurrentProperty(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
             _mockGateway.Verify(_ => _.IsBenefitsClaimant(It.IsAny<string>()), Times.Once);
         }
 
@@ -247,7 +247,7 @@ namespace revs_bens_service_tests.Service
             _mockGateway.Verify(_ => _.GetAccount(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
             _mockGateway.Verify(_ => _.GetAllTransactionsForYear(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()), Times.Never);
             _mockGateway.Verify(_ => _.GetPaymentSchedule(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
-            _mockGateway.Verify(_ => _.GetCurrentProperty(It.IsAny<string>()), Times.Never);
+            _mockGateway.Verify(_ => _.GetCurrentProperty(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
             _mockGateway.Verify(_ => _.IsBenefitsClaimant(It.IsAny<string>()), Times.Never);
         }
     }

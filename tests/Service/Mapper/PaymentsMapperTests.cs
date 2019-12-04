@@ -43,10 +43,10 @@ namespace revs_bens_service_tests.Service.Mapper
 
             // Assert
             Assert.Equal(DateTime.Parse("12-01-2019"), result.UpcomingPayments[0].Date);
-            Assert.Equal(-60.00M, result.UpcomingPayments[0].Amount);
+            Assert.Equal(60.00M, result.UpcomingPayments[0].Amount);
             Assert.False(result.UpcomingPayments[0].IsDirectDebit);
             Assert.Equal(DateTime.Parse("12-12-2018"), result.UpcomingPayments[1].Date);
-            Assert.Equal(-100.00M, result.UpcomingPayments[1].Amount);
+            Assert.Equal(100.00M, result.UpcomingPayments[1].Amount);
             Assert.True(result.UpcomingPayments[1].IsDirectDebit);
         }
     }

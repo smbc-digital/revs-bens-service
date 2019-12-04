@@ -48,37 +48,6 @@ namespace revs_bens_service_tests.Service.Mapper
         }
 
         [Theory]
-        [InlineData("BENEFITS", "100.00", "Credit")]
-        [InlineData("COSTS", "100.00", "Debit")]
-        [InlineData("CTDRS", "100.00", "Credit")]
-        [InlineData("INTEREST", "-100.00", "Debit")]
-        [InlineData("LCTRS", "100.00", "Credit")]
-        [InlineData("PENALTY", "-100.00", "Debit")]
-        [InlineData("TRANSFER", "-100.00", "Debit")]
-        [InlineData("WRITEOFF", "100.00", "Credit")]
-        [InlineData("DISABLED", "-100.00", "Credit")]
-        [InlineData("EXEMPTION", "-100.00", "Credit")]
-        [InlineData("DISCOUNT", "-100.00", "Credit")]
-        [InlineData("LEVY", "-100.00", "Debit")]
-        [InlineData("ANNEXE", "100.00", "Credit")]
-        [InlineData("DISREGARD", "-100.00", "Credit")]
-        [InlineData("REDUCTION", "100.00", "Credit")]
-        public void MapTransactions_ShouldReturnTransactionHistory_WithCorrectType(string type, string amount, string expectedResult)
-        {
-            // Arrange
-            var result = new CouncilTaxDetailsModel();
-            model[0].TranType = type;
-            model[0].Amount = amount;
-
-            // Act
-            result = model.MapTransactions(result);
-
-            // Assert
-            Assert.Equal(expectedResult, result.TransactionHistory[0].Type);
-            //Assert.Equal("Premium Charge - SK1 3XE", result.TransactionHistory[0].Description);
-        }
-
-        [Theory]
         [InlineData("100.00", "100.00")]
         [InlineData("-100.00", "100.00")]
         public void MapTransactions_ShouldReturnTransactionHistory_WithAmount(string amount, string expectedResult)
