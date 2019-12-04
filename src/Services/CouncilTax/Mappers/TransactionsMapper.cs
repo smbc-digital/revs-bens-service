@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using revs_bens_service.Services.Models;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
+using Transaction = revs_bens_service.Services.Models.Transaction;
 
 namespace revs_bens_service.Services.CouncilTax.Mappers
 {
     public static class TransactionsMapper
     {
-        public static CouncilTaxDetailsModel MapTransactions(this TransactionResponse transactionResponse, CouncilTaxDetailsModel model)
+        public static CouncilTaxDetailsModel MapTransactions(this List<Transaction> transactionResponse, CouncilTaxDetailsModel model)
         {
-            model.TransactionHistory = transactionResponse.Transaction
+            model.TransactionHistory = transactionResponse
                 .Where(t => t.TranType != "Charge" && t.TranType != "REFUNDS" && t.TranType != "PAYMENTS")
                 .Select(transaction => new TransactionModelExtension
                 {
@@ -21,7 +22,7 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
                     Description = GetDescription(transaction.TranType, Convert(transaction.SubCode), transaction.PlaceDetail?.PostCode)
                 }).Distinct().ToList<ITransactionModel>();
 
-            model.PreviousPayments = transactionResponse.Transaction
+            model.PreviousPayments = transactionResponse
                 .Where(t => t.TranType == "PAYMENTS" || t.TranType == "REFUNDS")
                 .Select(transaction => new TransactionModelExtension
                 {
@@ -109,7 +110,8 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
             "exemption",
             "disabled",
             "costs",
-            "disregard"
+            "disregard",
+            "payments"
         };
 
         private static readonly Dictionary<string, string> PaymentMethod = new Dictionary<string, string>() {

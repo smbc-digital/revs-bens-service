@@ -8,7 +8,9 @@ using Newtonsoft.Json;
 using revs_bens_service.Services.CouncilTax.Mappers;
 using revs_bens_service.Utils.StorageProvider;
 using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
+using StockportGovUK.NetStandard.Models.RevsAndBens;
 using CouncilTaxDetailsModel = StockportGovUK.NetStandard.Models.RevsAndBens.CouncilTaxDetailsModel;
+using Transaction = revs_bens_service.Services.Models.Transaction;
 
 namespace revs_bens_service.Services.CouncilTax
 {
@@ -27,9 +29,15 @@ namespace revs_bens_service.Services.CouncilTax
         {
             var cacheResponse = await _cacheProvider.GetStringAsync($"{personReference}-{CacheKeys.CouncilTaxDetails}");
 
+            var settings = new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.All
+            };
+
             if (!string.IsNullOrEmpty(cacheResponse))
             {
-                return JsonConvert.DeserializeObject<CouncilTaxDetailsModel>(cacheResponse);
+                var cachedResponse = JsonConvert.DeserializeObject<CouncilTaxDetailsModel>(cacheResponse, settings);
+                return cachedResponse;
             }
 
             var model = new CouncilTaxDetailsModel();
@@ -41,7 +49,7 @@ namespace revs_bens_service.Services.CouncilTax
             model = accountsResponse.Parse<List<CtaxActDetails>>().ResponseContent.MapAccounts(model);
 
             var transactionsResponse = await _gateway.GetAllTransactionsForYear(personReference, accountReference, year);
-            model = transactionsResponse.Parse<TransactionResponse>().ResponseContent.MapTransactions(model);
+            model = transactionsResponse.Parse<List<Transaction>>().ResponseContent.MapTransactions(model);
 
             var paymentResponse = await _gateway.GetPaymentSchedule(personReference, year);
             model = paymentResponse.Parse<CouncilTaxPaymentScheduleResponse>().ResponseContent.MapPayments(model);
@@ -55,7 +63,7 @@ namespace revs_bens_service.Services.CouncilTax
             var isBenefitsResponse = await _gateway.IsBenefitsClaimant(personReference);
             model.HasBenefits = isBenefitsResponse.Parse<bool>().ResponseContent;
 
-            _ = _cacheProvider.SetStringAsync($"{personReference}-{CacheKeys.CouncilTaxDetails}", JsonConvert.SerializeObject(model));
+            _ = _cacheProvider.SetStringAsync($"{personReference}-{CacheKeys.CouncilTaxDetails}", JsonConvert.SerializeObject(model, Formatting.Indented, settings));
 
             return model;
         }

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
+using StockportGovUK.NetStandard.Models.Enums;
 
 namespace revs_bens_service.Services.Benefits.Mappers
 {
@@ -63,14 +64,14 @@ namespace revs_bens_service.Services.Benefits.Mappers
             };
         }
 
-        private static string SetPaymentStatus(string amount, BenefitEntitlement benefitEntitlement, string paymentSchedule)
+        private static EPaymentStatus SetPaymentStatus(string amount, BenefitEntitlement benefitEntitlement, string paymentSchedule)
         {
             var weeks = 0;
 
             switch (paymentSchedule.ToLower())
             {
                 case "weekly":
-                    return "Expected";
+                    return EPaymentStatus.Expected;
                 case "fortnightly":
                     weeks = 2;
                     break;
@@ -78,7 +79,7 @@ namespace revs_bens_service.Services.Benefits.Mappers
                     weeks = 4;
                     break;
                 default:
-                    return "Expected";
+                    return EPaymentStatus.Expected;
             }
 
             var rentType = benefitEntitlement.PrivateRent ?? benefitEntitlement.CouncilRent;
@@ -96,12 +97,12 @@ namespace revs_bens_service.Services.Benefits.Mappers
 
             if (actualPayment == expectedPayment)
             {
-                return "Expected";
+                return EPaymentStatus.Expected;
             }
 
             return actualPayment < expectedPayment
-                ? "Reduced"
-                : "Increased";
+                ? EPaymentStatus.Reduced
+                : EPaymentStatus.Increased;
         }
 
         private static string ParseStatusCode(string statusCode)

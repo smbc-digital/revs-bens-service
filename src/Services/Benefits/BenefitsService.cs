@@ -15,9 +15,9 @@ namespace revs_bens_service.Services.Benefits
     public class BenefitsService : IBenefitsService
     {
         private readonly ICivicaServiceGateway _civicaServiceGateway;
-        private readonly IDistributedCache _cacheProvider;
+        private readonly ICacheProvider _cacheProvider;
 
-        public BenefitsService(ICivicaServiceGateway civicaServiceGateway, IDistributedCache cacheProvider)
+        public BenefitsService(ICivicaServiceGateway civicaServiceGateway, ICacheProvider cacheProvider)
         {
             _civicaServiceGateway = civicaServiceGateway;
             _cacheProvider = cacheProvider;
@@ -104,7 +104,7 @@ namespace revs_bens_service.Services.Benefits
                 .Where(_ => ToFinancialYear(DateTime.Parse(_.PeriodStart)) == currentTaxYear)
                 .ToList();
 
-            var accountReference = currentYearPayments.FirstOrDefault() != null
+            var accountReference = currentYearPayments.FirstOrDefault() != null 
                 ? currentYearPayments.First().CouncilTaxReference
                 : "N/A";
 
