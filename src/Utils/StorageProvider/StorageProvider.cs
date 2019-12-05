@@ -14,7 +14,7 @@ namespace revs_bens_service.Utils.StorageProvider
                 case "Redis":
                     services.AddStackExchangeRedisCache(options =>
                     {
-                        options.Configuration = storageProviderConfiguration["Address"] ?? "http://127.0.0.1:6379";
+                        options.Configuration = storageProviderConfiguration["Address"] ?? "http://127.0.0.1";
                     });
                     break;
                 default:
