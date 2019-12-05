@@ -33,7 +33,6 @@ namespace revs_bens_service
             services.AddSingleton<IBenefitsService, BenefitsService>();
             services.AddSingleton<ICouncilTaxService, CouncilTaxService>();
             services.AddSingleton<ICivicaServiceGateway, CivicaServiceGateway>();
-            services.AddStorageProvider(Configuration);
 
             services
                 .AddMvc()

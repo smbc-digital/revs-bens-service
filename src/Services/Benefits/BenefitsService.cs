@@ -25,14 +25,22 @@ namespace revs_bens_service.Services.Benefits
 
         public async Task<bool> IsBenefitsClaimant(string personReference)
         {
-            var response = await _civicaServiceGateway.IsBenefitsClaimant(personReference);
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                return response.Parse<bool>().ResponseContent;
-            }
+                 var response = await _civicaServiceGateway.IsBenefitsClaimant(personReference);
 
-            throw new Exception($"IsBenefitsClaimant({personReference}) failed with status code: {response.StatusCode}");
+                if (response.IsSuccessStatusCode)
+                {
+                 return response.Parse<bool>().ResponseContent;
+                }
+            }
+            catch(Exception ex)
+            {
+               var e = ex; 
+            }
+           
+
+             throw new Exception($"IsBenefitsClaimant({personReference}) failed with status code");
         }
 
         public async Task<Claim> GetBenefits(string personReference)
