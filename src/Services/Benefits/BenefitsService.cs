@@ -25,22 +25,14 @@ namespace revs_bens_service.Services.Benefits
 
         public async Task<bool> IsBenefitsClaimant(string personReference)
         {
-            try
-            {
-                 var response = await _civicaServiceGateway.IsBenefitsClaimant(personReference);
+            var response = await _civicaServiceGateway.IsBenefitsClaimant(personReference);
 
-                if (response.IsSuccessStatusCode)
-                {
-                 return response.Parse<bool>().ResponseContent;
-                }
-            }
-            catch(Exception ex)
+            if (response.IsSuccessStatusCode)
             {
-               var e = ex; 
+                return response.Parse<bool>().ResponseContent;
             }
-           
 
-             throw new Exception($"IsBenefitsClaimant({personReference}) failed with status code");
+            throw new Exception($"IsBenefitsClaimant({personReference}) failed with status code: {response.StatusCode}");
         }
 
         public async Task<Claim> GetBenefits(string personReference)
@@ -112,7 +104,7 @@ namespace revs_bens_service.Services.Benefits
                 .Where(_ => ToFinancialYear(DateTime.Parse(_.PeriodStart)) == currentTaxYear)
                 .ToList();
 
-            var accountReference = currentYearPayments.FirstOrDefault() != null 
+            var accountReference = currentYearPayments.FirstOrDefault() != null
                 ? currentYearPayments.First().CouncilTaxReference
                 : "N/A";
 
