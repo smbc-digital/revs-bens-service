@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace revs_bens_service.Utils.StorageProvider
 {
@@ -15,6 +16,7 @@ namespace revs_bens_service.Utils.StorageProvider
                     services.AddStackExchangeRedisCache(options =>
                     {
                         options.Configuration = storageProviderConfiguration["Address"] ?? "127.0.0.1";
+                        options.InstanceName = storageProviderConfiguration["Name"] ?? Assembly.GetEntryAssembly().GetName().Name;
                     });
                     break;
                 default:
