@@ -10,7 +10,6 @@ using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
 using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
 using Xunit;
-using Band = StockportGovUK.NetStandard.Models.Civica.CouncilTax.Band;
 using Date = revs_bens_service.Services.Models.Date;
 using Instalment = StockportGovUK.NetStandard.Models.Civica.CouncilTax.Instalment;
 using PlaceDetail = revs_bens_service.Services.Models.PlaceDetail;
@@ -95,10 +94,8 @@ namespace revs_bens_service_tests.Service
             }
         });
 
-        private readonly string _mockPaymentsScheduleResponse = JsonConvert.SerializeObject(new CouncilTaxPaymentScheduleResponse
+        private readonly string _mockPaymentsScheduleResponse = JsonConvert.SerializeObject(new List<StockportGovUK.NetStandard.Models.Civica.CouncilTax.Instalment>
         {
-            InstalmentList = new List<Instalment>
-            {
                 new Instalment
                 {
                     DateDue = "12-01-2019",
@@ -111,13 +108,11 @@ namespace revs_bens_service_tests.Service
                     AmountDue = 100.00M,
                     IsDirectDebit = "true"
                 }
-            }
         });
 
-        private readonly string _mockPlacesResponse = JsonConvert.SerializeObject(new Places
+        private readonly string _mockPlacesResponse = JsonConvert.SerializeObject(new Place
         {
-            ChargeDetails = null,
-            Band = new Band
+            Band = new StockportGovUK.NetStandard.Models.RevsAndBens.Band
             {
                 Text = "A"
             },

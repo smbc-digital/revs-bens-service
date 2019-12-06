@@ -8,6 +8,7 @@ using revs_bens_service.Utils.StorageProvider;
 using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
 using CouncilTaxDetailsModel = StockportGovUK.NetStandard.Models.RevsAndBens.CouncilTaxDetailsModel;
 using Transaction = revs_bens_service.Services.Models.Transaction;
+using StockportGovUK.NetStandard.Models.RevsAndBens;
 
 namespace revs_bens_service.Services.CouncilTax
 {
@@ -45,10 +46,10 @@ namespace revs_bens_service.Services.CouncilTax
             model = transactionsResponse.Parse<List<Transaction>>().ResponseContent.MapTransactions(model);
 
             var paymentResponse = await _gateway.GetPaymentSchedule(personReference, year);
-            model = paymentResponse.Parse<CouncilTaxPaymentScheduleResponse>().ResponseContent.MapPayments(model);
+            model = paymentResponse.Parse<List<StockportGovUK.NetStandard.Models.Civica.CouncilTax.Instalment>>().ResponseContent.MapPayments(model);
 
             var currentPropertyResponse = await _gateway.GetCurrentProperty(personReference, accountReference);
-            model = currentPropertyResponse.Parse<Places>().ResponseContent.MapCurrentProperty(model);
+            model = currentPropertyResponse.Parse<Place>().ResponseContent.MapCurrentProperty(model);
 
             var documentsResponse = await _gateway.GetDocuments(personReference);
             model = documentsResponse.Parse<List<CouncilTaxDocumentReference>>().ResponseContent.DocumentsMapper(model, year);

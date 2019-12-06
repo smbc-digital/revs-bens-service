@@ -39,7 +39,7 @@ namespace revs_bens_service_tests.Service.Mapper
             var result = new CouncilTaxDetailsModel();
 
             // Act
-            result = model.MapPayments(result);
+            result = model.InstalmentList.MapPayments(result);
 
             // Assert
             Assert.Equal(DateTime.Parse("12-01-2019"), result.UpcomingPayments[0].Date);
