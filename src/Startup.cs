@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using revs_bens_service.Services.Availability;
 using revs_bens_service.Services.Benefits;
 using revs_bens_service.Services.CouncilTax;
 using revs_bens_service.Utils.HealthChecks;
@@ -33,6 +34,7 @@ namespace revs_bens_service
             services.AddSingleton<IBenefitsService, BenefitsService>();
             services.AddSingleton<ICouncilTaxService, CouncilTaxService>();
             services.AddSingleton<ICivicaServiceGateway, CivicaServiceGateway>();
+            services.AddSingleton<IAvailabilityService, AvailabilityService>();
 
             services
                 .AddMvc()

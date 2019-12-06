@@ -61,7 +61,7 @@ namespace revs_bens_service.Controllers
             // Get the elapsed time as a TimeSpan value.	
             TimeSpan ts = stopWatch.Elapsed;
 
-            // Format and display the TimeSpan value.	
+            // Format and display the TimeSpan value.
             string elapsedTime = $"{ts.Hours:00}:{ts.Minutes:00}:{ts.Seconds:00}.{ts.Milliseconds / 10:00}";
                 
             return Ok(model);
