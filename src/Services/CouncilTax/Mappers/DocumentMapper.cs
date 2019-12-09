@@ -12,15 +12,17 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
     {
         public static CouncilTaxDetailsModel DocumentsMapper(this List<CouncilTaxDocumentReference> documentResponse, CouncilTaxDetailsModel model, int taxYear)
         {
-            model.Documents = documentResponse.Select(_ => new CouncilTaxDocument
-            {
-                AccountReference = _.AccountReference,
-                DateCreated = _.DateCreated,
-                DocumentId = _.DocumentId,
-                DocumentName = _.DocumentName,
-                DocumentType = _.DocumentType,
-                Downloaded = _.Downloaded
-            }).ToList();
+            model.Documents = documentResponse
+                .Where(_ => _.AccountReference == model.Reference)
+                .Select(_ => new CouncilTaxDocument
+                {
+                    AccountReference = _.AccountReference,
+                    DateCreated = _.DateCreated,
+                    DocumentId = _.DocumentId,
+                    DocumentName = _.DocumentName,
+                    DocumentType = _.DocumentType,
+                    Downloaded = _.Downloaded
+                }).ToList();
             
             if(model.Documents != null )
             {
