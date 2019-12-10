@@ -19,6 +19,8 @@ namespace revs_bens_service.Utils.StorageProvider
                         options.InstanceName = storageProviderConfiguration["Name"] ?? Assembly.GetEntryAssembly().GetName().Name;
                     });
                     break;
+                case "None":
+                    break;
                 default:
                     services.AddDistributedMemoryCache();
                     break;

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net;
 using revs_bens_service.Utils.Parsers;
 using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
 using System.Threading.Tasks;
@@ -60,6 +61,31 @@ namespace revs_bens_service.Services.CouncilTax
             _ = _cacheProvider.SetStringAsync(key, JsonConvert.SerializeObject(model));
 
             return model;
+        }
+
+        public async Task<byte[]> GetDocumentForAccount(string personReference, string accountReference, string documentId)
+        {
+            var key = $"{personReference}-{accountReference}-{documentId}-{CacheKeys.CouncilTaxDetails}";
+            var cacheResponse = await _cacheProvider.GetStringAsync(key);
+
+            if (!string.IsNullOrEmpty(cacheResponse))
+            {
+                var cachedResponse = JsonConvert.DeserializeObject<byte[]>(cacheResponse);
+                return cachedResponse;
+            }
+
+            var response = await _gateway.GetDocumentForAccount(personReference, accountReference, documentId);
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+
+            var document = await response.Content.ReadAsByteArrayAsync();
+
+            _ = _cacheProvider.SetStringAsync(key, JsonConvert.SerializeObject(document));
+
+            return document;
         }
     }
 }

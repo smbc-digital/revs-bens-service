@@ -52,18 +52,27 @@ namespace revs_bens_service.Controllers
             [FromRoute][Required]string accountReference,
             [FromRoute][Required]int year)
         {
-            Stopwatch stopWatch = new Stopwatch();
-            stopWatch.Start();
-
             var model = await _councilTaxService.GetCouncilTaxDetails(personReference, accountReference, year);
-
-            stopWatch.Stop();
-            // Get the elapsed time as a TimeSpan value.	
-            TimeSpan ts = stopWatch.Elapsed;
-
-            // Format and display the TimeSpan value.
-            string elapsedTime = $"{ts.Hours:00}:{ts.Minutes:00}:{ts.Seconds:00}.{ts.Milliseconds / 10:00}";
                 
+            return Ok(model);
+        }
+
+        [HttpGet]
+        [Route("{personReference}/council-tax/{accountReference}/documents/{documentId}")]
+        public async Task<IActionResult> GetDocumentForAccount([FromRoute][Required]string personReference, [FromRoute][Required]string accountReference, [FromRoute][Required]string documentId)
+        {
+            var model = await _councilTaxService.GetDocumentForAccount(personReference, accountReference, documentId);
+
+            if (model == null)
+            {
+                return NotFound();
+            }
+
+            if(model.Length == 0)
+            {
+                return NoContent();
+            }
+            
             return Ok(model);
         }
     }
