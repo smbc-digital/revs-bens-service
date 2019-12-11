@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
 using revs_bens_service.Services.CouncilTax;
@@ -22,6 +23,7 @@ namespace revs_bens_service_tests.Service
         private readonly CouncilTaxService _service;
         private readonly Mock<ICivicaServiceGateway> _mockGateway = new Mock<ICivicaServiceGateway>();
         private readonly Mock<ICacheProvider> _cache = new Mock<ICacheProvider>();
+        private readonly Mock<ILogger<CouncilTaxService>> _mockLogger = new Mock<ILogger<CouncilTaxService>>();
 
         #region Test models
 
@@ -124,7 +126,7 @@ namespace revs_bens_service_tests.Service
 
         public CouncilTaxServiceTests()
         {
-            _service = new CouncilTaxService(_mockGateway.Object, _cache.Object);
+            _service = new CouncilTaxService(_mockGateway.Object, _cache.Object, _mockLogger.Object);
 
             _mockGateway
                 .Setup(_ => _.GetAccounts(It.IsAny<string>()))
