@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 
@@ -8,11 +9,16 @@ namespace revs_bens_service.Utils.StorageProvider
     {
         private readonly bool _allowCaching;
 
+        private readonly double _defaultTimeout;
+
         private readonly IDistributedCache _cacheProvider;
 
         public CacheProvider(IDistributedCache cacheProvider, IConfiguration configuration)
         {
-            _allowCaching = configuration.GetSection("StorageProvider")["Type"] != "None";
+            _allowCaching = configuration.GetValue<string>("StorageProvider:Type") != "None";
+            _defaultTimeout = configuration.GetValue<double>("StorageProvider:Timeout") != 0
+                ? configuration.GetValue<double>("StorageProvider:Timeout")
+                : 20;
             _cacheProvider = cacheProvider;
         }
 
@@ -30,7 +36,10 @@ namespace revs_bens_service.Utils.StorageProvider
         {
             if (_allowCaching)
             {
-                await _cacheProvider.SetStringAsync(key, value);
+                await _cacheProvider.SetStringAsync(key, value, new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(_defaultTimeout)
+                });
             }
         }
 
