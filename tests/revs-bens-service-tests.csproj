@@ -14,7 +14,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
     <PackageReference Include="Moq" Version="4.*" />
-    <PackageReference Include="StockportGovUK.AspNetCore.Gateways" Version="0.9.9" />
+    <PackageReference Include="StockportGovUK.NetStandard.Gateways" Version="1.0.6" />
     <PackageReference Include="System.Net.Http" Version="4.*" />
     <PackageReference Include="System.Text.RegularExpressions" Version="4.*" />
     <PackageReference Include="xunit" Version="2.4.1" />

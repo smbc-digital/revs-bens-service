@@ -1,7 +1,7 @@
 using System;
 using System.Net.Http;
 using Newtonsoft.Json;
-using StockportGovUK.AspNetCore.Gateways.Response;
+using StockportGovUK.NetStandard.Gateways.Response;
 
 namespace revs_bens_service.Utils.Parsers
 {

@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using Moq;
 using Newtonsoft.Json;
 using revs_bens_service.Services.Benefits;
 using revs_bens_service.Utils.StorageProvider;
-using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
+using StockportGovUK.NetStandard.Gateways.CivicaServiceGateway;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
 using Xunit;
 

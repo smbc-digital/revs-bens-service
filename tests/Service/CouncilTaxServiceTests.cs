@@ -5,7 +5,7 @@ using Moq;
 using Newtonsoft.Json;
 using revs_bens_service.Services.CouncilTax;
 using revs_bens_service.Utils.StorageProvider;
-using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
+using StockportGovUK.NetStandard.Gateways.CivicaServiceGateway;
 using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
 using Xunit;

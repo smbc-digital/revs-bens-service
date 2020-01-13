@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using revs_bens_service.Utils.Parsers;
-using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
+using StockportGovUK.NetStandard.Gateways.CivicaServiceGateway;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using revs_bens_service.Services.CouncilTax.Mappers;
 using revs_bens_service.Utils.StorageProvider;
