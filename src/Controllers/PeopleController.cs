@@ -61,19 +61,19 @@ namespace revs_bens_service.Controllers
         [Route("{personReference}/council-tax/{accountReference}/documents/{documentId}")]
         public async Task<IActionResult> GetDocumentForAccount([FromRoute][Required]string personReference, [FromRoute][Required]string accountReference, [FromRoute][Required]string documentId)
         {
-            var model = await _councilTaxService.GetDocumentForAccount(personReference, accountReference, documentId);
+            var document = await _councilTaxService.GetDocumentForAccount(personReference, accountReference, documentId);
 
-            if (model == null)
+            if (document == null)
             {
                 return NotFound();
             }
 
-            if(model.Length == 0)
+            if(document.Length == 0)
             {
                 return NoContent();
             }
             
-            return Ok(model);
+            return File(document, "application/pdf", "download.pdf");
         }
     }
 }
