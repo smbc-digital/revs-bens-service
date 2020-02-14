@@ -24,6 +24,7 @@ namespace revs_bens_service_tests.Service
         {
             new BenefitsClaimSummary
             {
+                PersonName = "Test Test",
                 Status = "Current",
                 PlaceReference = "123",
                 Address = "address",
@@ -34,6 +35,10 @@ namespace revs_bens_service_tests.Service
 
         private readonly string mockBenefitsClaim = JsonConvert.SerializeObject(new BenefitsClaim
         {
+            PersonName = new PersonName{
+                Forenames = "Test",
+                Surname = "Test"
+            },
             Status = "1",
             Type = "type",
             Number = "1234",

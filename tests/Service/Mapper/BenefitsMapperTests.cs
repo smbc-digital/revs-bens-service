@@ -10,6 +10,11 @@ namespace revs_bens_service_tests.Service.Mapper
     {
         private BenefitsClaim _benefitsClaim = new BenefitsClaim
         {
+            PersonName = new PersonName
+            {
+                Forenames = "Test",
+                Surname = "Test"
+            },
             Number = "123",
             Status = "1",
             NextPayment = new CivicaNextPayment
@@ -93,6 +98,7 @@ namespace revs_bens_service_tests.Service.Mapper
             // Arrange
             var expectedResult = new ClaimDetails
             {
+                PersonName = "Test Test",
                 Number = "123",
                 Status = "Current",
                 NextPayment = new ClaimNextPayment
@@ -118,6 +124,7 @@ namespace revs_bens_service_tests.Service.Mapper
             var result = _benefitsClaim.MapToClaimDetails();
 
             // Assert
+            Assert.Equal(expectedResult.PersonName, result.PersonName);
             Assert.Equal(expectedResult.Number, result.Number);
             Assert.Equal(expectedResult.Status, result.Status);
             Assert.Equal(expectedResult.NextPayment.Amount, result.NextPayment.Amount);

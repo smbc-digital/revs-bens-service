@@ -11,6 +11,7 @@ namespace revs_bens_service.Services.Benefits.Mappers
         {
             return new ClaimDetails
             {
+                PersonName = $"{claim.PersonName.Forenames} {claim.PersonName.Surname}",
                 Number = claim.Number,
                 Status = ParseStatusCode(claim.Status),
                 NextPayment = SetNextPayment(claim),
