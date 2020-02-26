@@ -11,6 +11,11 @@ namespace revs_bens_service_tests.Service.Mapper
     {
         private CouncilTaxAccountResponse model = new CouncilTaxAccountResponse
         {
+            PersonName = new StockportGovUK.NetStandard.Models.Civica.CouncilTax.PersonName
+            {
+                Forenames = "Test",
+                Surname = "Test"
+            },
             AccountDetails = new AccountDetail
             {
                 ActPayGrp = new ActPayGrp
