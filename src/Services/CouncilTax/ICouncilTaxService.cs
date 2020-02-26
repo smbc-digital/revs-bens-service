@@ -5,6 +5,8 @@ namespace revs_bens_service.Services.CouncilTax
 {
     public interface ICouncilTaxService
     {
+        Task<CouncilTaxDetailsModel> GetBaseCouncilTaxAccount(string personReference);
+        
         Task<CouncilTaxDetailsModel> GetCouncilTaxDetails(string personReference, string accountReference, int year);
 
         Task<byte[]> GetDocumentForAccount(string personReference, string accountReference, string documentId);

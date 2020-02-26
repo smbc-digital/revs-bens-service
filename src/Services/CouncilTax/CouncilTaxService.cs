@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
+using System.Collections.Generic;
 using System.Net;
 using revs_bens_service.Utils.Parsers;
 using StockportGovUK.NetStandard.Gateways.CivicaServiceGateway;
@@ -10,6 +11,7 @@ using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
 using CouncilTaxDetailsModel = StockportGovUK.NetStandard.Models.RevsAndBens.CouncilTaxDetailsModel;
 using Transaction = revs_bens_service.Services.Models.Transaction;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
+using System;
 
 namespace revs_bens_service.Services.CouncilTax
 {
@@ -24,6 +26,28 @@ namespace revs_bens_service.Services.CouncilTax
             _cacheProvider = cacheProvider;
         }
 
+        public async Task<CouncilTaxDetailsModel> GetBaseCouncilTaxAccount(string personReference){
+            var key = $"{personReference}-{DateTime.Now.Year}-{CacheKeys.CouncilTaxDetails}";
+            var cacheResponse = await _cacheProvider.GetStringAsync(key);
+
+            if (!string.IsNullOrEmpty(cacheResponse))
+            {
+                var cachedResponse = JsonConvert.DeserializeObject<CouncilTaxDetailsModel>(cacheResponse);
+                return cachedResponse;
+            }
+
+            var accountsResponse = await _gateway.GetAccounts(personReference);
+            
+            var model = new CouncilTaxDetailsModel();
+            model = accountsResponse.Parse<List<CtaxActDetails>>().ResponseContent.MapAccounts(model);
+            var account = await _gateway.GetAccount(personReference, model.Accounts.FirstOrDefault(_ => _.Status == "CURRENT").Reference);
+            model = account.Parse<CouncilTaxAccountResponse>().ResponseContent.MapAccount(model, DateTime.Now.Year);
+
+            _ = _cacheProvider.SetStringAsync(key, JsonConvert.SerializeObject(model));
+
+            return model;
+        }
+        
         public async Task<CouncilTaxDetailsModel> GetCouncilTaxDetails(string personReference, string accountReference, int year)
         {
             var key = $"{personReference}-{accountReference}-{year}-{CacheKeys.CouncilTaxDetails}";

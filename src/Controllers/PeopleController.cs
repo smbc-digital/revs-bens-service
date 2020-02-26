@@ -44,7 +44,14 @@ namespace revs_bens_service.Controllers
             return Ok(model);
         }
 
-        //TODO: Make better than 1:10.22	
+        [HttpGet]
+        [Route("{personReference}/council-tax")]
+        public async Task<IActionResult> GetBaseCouncilTaxAccount([FromRoute][Required]string personReference){
+            var model = await _councilTaxService.GetBaseCouncilTaxAccount(personReference);
+
+            return Ok(model);
+        }
+
         [HttpGet]
         [Route("{personReference}/council-tax/{accountReference}/{year}")]
         public async Task<IActionResult> GetCouncilTaxDetails(

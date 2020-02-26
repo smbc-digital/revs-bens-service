@@ -38,7 +38,7 @@ namespace revs_bens_service.Services.Benefits
         {
             var cacheResponse = await _cacheProvider.GetStringAsync($"{personReference}-{CacheKeys.BenefitDetails}");
 
-            if (!string.IsNullOrEmpty(cacheResponse))
+           if (!string.IsNullOrEmpty(cacheResponse))
             {
                 return JsonConvert.DeserializeObject<Claim>(cacheResponse);
             }
@@ -46,24 +46,17 @@ namespace revs_bens_service.Services.Benefits
             var benefitsResponse = await _civicaServiceGateway.GetBenefits(personReference);
             var claims = benefitsResponse.Parse<List<BenefitsClaimSummary>>().ResponseContent;
 
-            if (claims == null || !claims.Any())
-            {
-                return null;
-            }
-
-            var claimResponse = claims.Select(_ => new Claim
-            {
-                Details = GetDetails(personReference, _.Number, _.PlaceReference).Result,
+            var claim = new Claim {
+                Details = claims.Select( _ => GetDetails(personReference, _.Number, _.PlaceReference).Result).FirstOrDefault(_ => _.Status == "Current"),
+                BenefitsSummary = GetBenefitsSummary(personReference).Result,
                 Documents = GetDocuments(personReference).Result,
                 HousingBenefitPaymentHistory = GetHousingBenefitsPayments(personReference).Result,
                 CouncilTaxPaymentHistory = GetCouncilTaxPayments(personReference).Result,
-                BenefitsSummary = GetBenefitsSummary(personReference).Result
-            })
-            .FirstOrDefault(_ => _.Details.Status == "Current");
+            };
 
-            _ = _cacheProvider.SetStringAsync($"{personReference}-{CacheKeys.BenefitDetails}", JsonConvert.SerializeObject(claimResponse));
+            _ = _cacheProvider.SetStringAsync($"{personReference}-{CacheKeys.BenefitDetails}", JsonConvert.SerializeObject(claim));
 
-            return claimResponse;
+            return claim;
         }
 
         private async Task<ClaimDetails> GetDetails(string personReference, string claimNumber, string placeReference)
@@ -77,21 +70,21 @@ namespace revs_bens_service.Services.Benefits
         {
             var response = await _civicaServiceGateway.GetDocuments(personReference);
             var documents = response.Parse<List<CouncilTaxDocument>>().ResponseContent;
-            return documents.MapToDocuments().Where(_ => _.Type == "Notif").ToList();
+            return documents?.MapToDocuments().Where(_ => _.Type == "Notif").ToList() ?? new List<BenefitsDocument>();
         }
 
         private async Task<List<Payment>> GetHousingBenefitsPayments(string personReference)
         {
             var response = await _civicaServiceGateway.GetHousingBenefitPaymentHistory(personReference);
             var payments = response.Parse<List<PaymentDetail>>().ResponseContent;
-            return payments.MapToPayments();
+            return payments?.MapToPayments() ?? new List<Payment>();
         }
 
         private async Task<List<Payment>> GetCouncilTaxPayments(string personReference)
         {
             var response = await _civicaServiceGateway.GetCouncilTaxBenefitPaymentHistory(personReference);
             var payments = response.Parse<List<PaymentDetail>>().ResponseContent;
-            return payments.MapToPayments();
+            return payments?.MapToPayments() ?? new List<Payment>();
         }
 
         private async Task<BenefitsSummary> GetBenefitsSummary(string personReference)
