@@ -12,6 +12,7 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
 
         public static CouncilTaxDetailsModel MapAccount(this CouncilTaxAccountResponse accountResponse, CouncilTaxDetailsModel model, int taxYear)
         {
+            model.PersonName = $"{accountResponse.PersonName.Forenames} {accountResponse.PersonName.Surname}";
             model.PaymentMethod = accountResponse.AccountDetails.ActPayGrp.PaymentMethod.Contains("DD") ? "Direct Debit" : string.Empty;
             model.IsDirectDebitCustomer = accountResponse.AccountDetails.ActPayGrp.IsDirectDebit();
             model.AmountOwing = accountResponse.CouncilTaxAccountBalance;

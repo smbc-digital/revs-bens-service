@@ -5,7 +5,7 @@ using Moq;
 using Newtonsoft.Json;
 using revs_bens_service.Services.CouncilTax;
 using revs_bens_service.Utils.StorageProvider;
-using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
+using StockportGovUK.NetStandard.Gateways.CivicaServiceGateway;
 using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
 using Xunit;
@@ -37,6 +37,11 @@ namespace revs_bens_service_tests.Service
 
         private readonly string _mockCouncilTaxAccountResponse = JsonConvert.SerializeObject(new CouncilTaxAccountResponse
         {
+            PersonName = new StockportGovUK.NetStandard.Models.Civica.CouncilTax.PersonName
+            {
+                Forenames = "Test",
+                Surname = "Test"
+            },
             AccountDetails = new AccountDetail
             {
                 ActPayGrp = new ActPayGrp
@@ -186,6 +191,12 @@ namespace revs_bens_service_tests.Service
         public async void GetCouncilTaxDetails_ShouldCallGateway()
         {
             // Arrange
+            var model = new CouncilTaxDetailsModel
+            {
+                PersonName = string.Empty,
+                AccountName = string.Empty,
+                AccountNumber = string.Empty
+            };
 
             // Act
             await _service.GetCouncilTaxDetails("123", "5001111234", 2018);
@@ -214,7 +225,6 @@ namespace revs_bens_service_tests.Service
         public async void GetCouncilTaxDetails_ShouldCallCacheProvider()
         {
             // Arrange
-
             _cache
                 .Setup(_ => _.SetStringAsync(It.IsAny<string>(), It.IsAny<string>()));
 

@@ -44,7 +44,14 @@ namespace revs_bens_service.Controllers
             return Ok(model);
         }
 
-        //TODO: Make better than 1:10.22	
+        [HttpGet]
+        [Route("{personReference}/council-tax")]
+        public async Task<IActionResult> GetBaseCouncilTaxAccount([FromRoute][Required]string personReference){
+            var model = await _councilTaxService.GetBaseCouncilTaxAccount(personReference);
+
+            return Ok(model);
+        }
+
         [HttpGet]
         [Route("{personReference}/council-tax/{accountReference}/{year}")]
         public async Task<IActionResult> GetCouncilTaxDetails(
@@ -61,19 +68,19 @@ namespace revs_bens_service.Controllers
         [Route("{personReference}/council-tax/{accountReference}/documents/{documentId}")]
         public async Task<IActionResult> GetDocumentForAccount([FromRoute][Required]string personReference, [FromRoute][Required]string accountReference, [FromRoute][Required]string documentId)
         {
-            var model = await _councilTaxService.GetDocumentForAccount(personReference, accountReference, documentId);
+            var document = await _councilTaxService.GetDocumentForAccount(personReference, accountReference, documentId);
 
-            if (model == null)
+            if (document == null)
             {
                 return NotFound();
             }
 
-            if(model.Length == 0)
+            if(document.Length == 0)
             {
                 return NoContent();
             }
             
-            return Ok(model);
+            return File(document, "application/pdf", "download.pdf");
         }
     }
 }

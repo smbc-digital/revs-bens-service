@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using Moq;
 using Newtonsoft.Json;
 using revs_bens_service.Services.Benefits;
 using revs_bens_service.Utils.StorageProvider;
-using StockportGovUK.AspNetCore.Gateways.CivicaServiceGateway;
+using StockportGovUK.NetStandard.Gateways.CivicaServiceGateway;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
 using Xunit;
 
@@ -25,6 +24,10 @@ namespace revs_bens_service_tests.Service
         {
             new BenefitsClaimSummary
             {
+                PersonName = new PersonName{
+                    Forenames = "Test",
+                    Surname = "Test"
+                },
                 Status = "Current",
                 PlaceReference = "123",
                 Address = "address",
@@ -35,6 +38,10 @@ namespace revs_bens_service_tests.Service
 
         private readonly string mockBenefitsClaim = JsonConvert.SerializeObject(new BenefitsClaim
         {
+            PersonName = new PersonName{
+                Forenames = "Test",
+                Surname = "Test"
+            },
             Status = "1",
             Type = "type",
             Number = "1234",
@@ -224,17 +231,6 @@ namespace revs_bens_service_tests.Service
 
             // Assert
             _cache.Verify(_ => _.GetStringAsync(It.IsAny<string>()), Times.Once);
-        }
-
-
-        [Fact]
-        public async void GetBenefits_ShouldReturnNull_IfClaimsAreNull()
-        {
-            //Act
-            var result = await _service.GetBenefits("test");
-
-            //Assert
-            Assert.Null(result);
         }
 
         [Fact]
