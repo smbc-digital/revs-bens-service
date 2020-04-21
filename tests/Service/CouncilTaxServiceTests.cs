@@ -9,10 +9,6 @@ using StockportGovUK.NetStandard.Gateways.CivicaServiceGateway;
 using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
 using Xunit;
-using Date = revs_bens_service.Services.Models.Date;
-using Instalment = StockportGovUK.NetStandard.Models.Civica.CouncilTax.Instalment;
-using PlaceDetail = revs_bens_service.Services.Models.PlaceDetail;
-using Transaction = revs_bens_service.Services.Models.Transaction;
 
 namespace revs_bens_service_tests.Service
 {
@@ -98,15 +94,15 @@ namespace revs_bens_service_tests.Service
             }
         });
 
-        private readonly string _mockPaymentsScheduleResponse = JsonConvert.SerializeObject(new List<StockportGovUK.NetStandard.Models.Civica.CouncilTax.Instalment>
+        private readonly string _mockPaymentsScheduleResponse = JsonConvert.SerializeObject(new List<Installment>
         {
-                new Instalment
+                new Installment
                 {
                     DateDue = "12-01-2019",
                     AmountDue = 60.00M,
                     IsDirectDebit = "false"
                 },
-                new Instalment
+                new Installment
                 {
                     DateDue = "12-12-2018",
                     AmountDue = 100.00M,
@@ -190,14 +186,6 @@ namespace revs_bens_service_tests.Service
         [Fact]
         public async void GetCouncilTaxDetails_ShouldCallGateway()
         {
-            // Arrange
-            var model = new CouncilTaxDetailsModel
-            {
-                PersonName = string.Empty,
-                AccountName = string.Empty,
-                AccountNumber = string.Empty
-            };
-
             // Act
             await _service.GetCouncilTaxDetails("123", "5001111234", 2018);
 
@@ -212,8 +200,6 @@ namespace revs_bens_service_tests.Service
         [Fact]
         public async void GetCouncilTaxDetails_ShouldReturnCouncilTaxDetailsModel()
         {
-            // Arrange
-
             // Act
             var result = await _service.GetCouncilTaxDetails("123", "5001111234", 2018);
 

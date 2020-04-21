@@ -8,9 +8,9 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
 {
     public static class PaymentsMapper
     {
-        public static CouncilTaxDetailsModel MapPayments(this List<StockportGovUK.NetStandard.Models.Civica.CouncilTax.Instalment> paymentResponse, CouncilTaxDetailsModel model)
+        public static CouncilTaxDetailsModel MapPayments(this List<Installment> paymentResponse, CouncilTaxDetailsModel model)
         {
-            model.UpcomingPayments = paymentResponse.Select(_ => new StockportGovUK.NetStandard.Models.RevsAndBens.InstallmentModel
+            model.UpcomingPayments = paymentResponse.Select(_ => new InstallmentModel
             {
                 Amount = Math.Abs(_.AmountDue),
                 Date = DateTime.Parse(_.DateDue),

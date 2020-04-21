@@ -101,7 +101,7 @@ namespace revs_bens_service.Services.Benefits
                 : "N/A";
 
             var response = await _civicaServiceGateway.GetAccountDetailsForYear(personReference, accountReference, currentTaxYear);
-            var responseTotals = response.Parse<RecievedYearTotal>().ResponseContent;
+            var responseTotals = response.Parse<ReceivedYearTotal>().ResponseContent;
 
             if (responseTotals == null)
             {

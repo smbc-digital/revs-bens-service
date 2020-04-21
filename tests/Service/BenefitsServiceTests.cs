@@ -20,7 +20,7 @@ namespace revs_bens_service_tests.Service
 
         #region Test Models
 
-        private readonly string mockListBenefitClaimSummary = JsonConvert.SerializeObject(new List<BenefitsClaimSummary>
+        private readonly string _mockListBenefitClaimSummary = JsonConvert.SerializeObject(new List<BenefitsClaimSummary>
         {
             new BenefitsClaimSummary
             {
@@ -36,7 +36,7 @@ namespace revs_bens_service_tests.Service
             }
         });
 
-        private readonly string mockBenefitsClaim = JsonConvert.SerializeObject(new BenefitsClaim
+        private readonly string _mockBenefitsClaim = JsonConvert.SerializeObject(new BenefitsClaim
         {
             PersonName = new PersonName{
                 Forenames = "Test",
@@ -71,7 +71,7 @@ namespace revs_bens_service_tests.Service
             }
         });
 
-        private readonly string mockCouncilTaxDocument = JsonConvert.SerializeObject(new List<CouncilTaxDocument>
+        private readonly string _mockCouncilTaxDocument = JsonConvert.SerializeObject(new List<CouncilTaxDocument>
         {
             new CouncilTaxDocument
             {
@@ -84,9 +84,7 @@ namespace revs_bens_service_tests.Service
             }
         });
 
-        private readonly string mockListPaymentDetail = JsonConvert.SerializeObject(new List<PaymentDetail>());
-
-        private readonly string mockReceivedYearTotal = JsonConvert.SerializeObject(new RecievedYearTotal
+        private readonly string _mockReceivedYearTotal = JsonConvert.SerializeObject(new ReceivedYearTotal
         {
             BalanceOutstanding = "10.2",
             TotalBenefits = "323.25",
@@ -94,7 +92,7 @@ namespace revs_bens_service_tests.Service
             TotalPayments = "400.25"
         });
 
-        private readonly string mockListCouncilTaxPayments = JsonConvert.SerializeObject(new List<PaymentDetail>
+        private readonly string _mockListCouncilTaxPayments = JsonConvert.SerializeObject(new List<PaymentDetail>
         {
             new PaymentDetail
             {
@@ -104,8 +102,8 @@ namespace revs_bens_service_tests.Service
                 PayAmount = "20.00",
                 Payee = "payee",
                 PayType = "test-type",
-                PeriodStart = "02-12-2019",
-                PeriodEnd = "02-12-2020",
+                PeriodStart = DateTime.Today.ToString("dd-MM-yyyy"),
+                PeriodEnd = DateTime.Today.AddYears(1).ToString("dd-MM-yyyy"),
             }
         });
         #endregion
@@ -125,7 +123,7 @@ namespace revs_bens_service_tests.Service
               .ReturnsAsync(new HttpResponseMessage
               {
                   StatusCode = HttpStatusCode.OK,
-                  Content = new StringContent(mockListBenefitClaimSummary)
+                  Content = new StringContent(_mockListBenefitClaimSummary)
               });
 
             _mockGateway
@@ -133,7 +131,7 @@ namespace revs_bens_service_tests.Service
               .ReturnsAsync(new HttpResponseMessage
               {
                   StatusCode = HttpStatusCode.OK,
-                  Content = new StringContent(mockBenefitsClaim)
+                  Content = new StringContent(_mockBenefitsClaim)
               });
 
             _mockGateway
@@ -141,7 +139,7 @@ namespace revs_bens_service_tests.Service
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(mockCouncilTaxDocument)
+                    Content = new StringContent(_mockCouncilTaxDocument)
                 });
 
             _mockGateway
@@ -149,7 +147,7 @@ namespace revs_bens_service_tests.Service
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(mockListCouncilTaxPayments)
+                    Content = new StringContent(_mockListCouncilTaxPayments)
                 });
 
             _mockGateway
@@ -157,15 +155,15 @@ namespace revs_bens_service_tests.Service
                .ReturnsAsync(new HttpResponseMessage
                {
                    StatusCode = HttpStatusCode.OK,
-                   Content = new StringContent(mockListCouncilTaxPayments)
+                   Content = new StringContent(_mockListCouncilTaxPayments)
                });
 
             _mockGateway
-              .Setup(_ => _.GetAccountDetailsForYear("test-ref", "500000000", 2019))
+              .Setup(_ => _.GetAccountDetailsForYear("test-ref", "500000000", DateTime.Now.Year))
               .ReturnsAsync(new HttpResponseMessage
               {
                   StatusCode = HttpStatusCode.OK,
-                  Content = new StringContent(mockReceivedYearTotal)
+                  Content = new StringContent(_mockReceivedYearTotal)
               });
 
             _service = new BenefitsService(_mockGateway.Object, _cache.Object);
@@ -214,7 +212,7 @@ namespace revs_bens_service_tests.Service
             _mockGateway.Verify(_ => _.GetDocuments("test-ref"), Times.Once);
             _mockGateway.Verify(_ => _.GetHousingBenefitPaymentHistory("test-ref"), Times.Once);
             _mockGateway.Verify(_ => _.GetCouncilTaxBenefitPaymentHistory("test-ref"), Times.AtLeastOnce);
-            _mockGateway.Verify(_ => _.GetAccountDetailsForYear("test-ref", "500000000", 2019), Times.Once);
+            _mockGateway.Verify(_ => _.GetAccountDetailsForYear("test-ref", "500000000", DateTime.Now.Year), Times.Once);
         }
 
         [Fact]

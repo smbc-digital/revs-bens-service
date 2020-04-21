@@ -8,7 +8,6 @@ using Newtonsoft.Json;
 using revs_bens_service.Services.CouncilTax.Mappers;
 using revs_bens_service.Utils.StorageProvider;
 using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
-using CouncilTaxDetailsModel = StockportGovUK.NetStandard.Models.RevsAndBens.CouncilTaxDetailsModel;
 using Transaction = revs_bens_service.Services.Models.Transaction;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
 using System;
@@ -71,7 +70,7 @@ namespace revs_bens_service.Services.CouncilTax
             model = transactionsResponse.Parse<List<Transaction>>().ResponseContent.MapTransactions(model);
 
             var paymentResponse = await _gateway.GetPaymentSchedule(personReference, year);
-            model = paymentResponse.Parse<List<StockportGovUK.NetStandard.Models.Civica.CouncilTax.Instalment>>().ResponseContent.MapPayments(model);
+            model = paymentResponse.Parse<List<Installment>>().ResponseContent.MapPayments(model);
 
             var currentPropertyResponse = await _gateway.GetCurrentProperty(personReference, accountReference);
             model = currentPropertyResponse.Parse<Place>().ResponseContent.MapCurrentProperty(model);
