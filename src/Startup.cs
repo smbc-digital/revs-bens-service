@@ -63,15 +63,13 @@ namespace revs_bens_service
             app.UseMiddleware<Availability>();
             app.UseMiddleware<ExceptionHandling>();
 
-
             app.UseHealthChecks("/healthcheck", HealthCheckConfig.Options);
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint(
-                    $"{(env.IsEnvironment("local") ? string.Empty : "/revsbensservice")}/swagger/v1/swagger.json",
-                    "revs_bens_service API");
+                    $"{(env.IsEnvironment("local") ? string.Empty : "/revsbensservice")}/swagger/v1/swagger.json", "Revs and Bens service API");
             });
         }
     }

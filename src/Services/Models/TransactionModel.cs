@@ -34,7 +34,7 @@ namespace revs_bens_service.Services.Models
             {
                 var hashCode = Amount.GetHashCode();
                 hashCode = (hashCode * 397) ^ (Date != null ? Date.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (Type != null ? Type.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ Type.GetHashCode();
                 return hashCode;
             }
         }
