@@ -39,10 +39,7 @@ namespace revs_bens_service
             services.AddHealthChecks()
                     .AddCheck<TestHealthCheck>("TestHealthCheck");
 
-            services.AddSingleton<IBenefitsService, BenefitsService>();
-            services.AddSingleton<ICouncilTaxService, CouncilTaxService>();
-            services.AddSingleton<ICivicaServiceGateway, CivicaServiceGateway>();
-            services.AddSingleton<IAvailabilityService, AvailabilityService>();
+            services.RegisterServices();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
