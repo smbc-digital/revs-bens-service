@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using revs_bens_service.Services.Benefits.Mappers;
 using revs_bens_service.Utils.Parsers;
 using revs_bens_service.Utils.StorageProvider;
@@ -40,7 +40,7 @@ namespace revs_bens_service.Services.Benefits
 
            if (!string.IsNullOrEmpty(cacheResponse))
             {
-                return JsonConvert.DeserializeObject<Claim>(cacheResponse);
+                return JsonSerializer.Deserialize<Claim>(cacheResponse);
             }
 
             var benefitsResponse = await _civicaServiceGateway.GetBenefits(personReference);
@@ -54,7 +54,7 @@ namespace revs_bens_service.Services.Benefits
                 CouncilTaxPaymentHistory = GetCouncilTaxPayments(personReference).Result,
             };
 
-            _ = _cacheProvider.SetStringAsync($"{personReference}-{CacheKeys.BenefitDetails}", JsonConvert.SerializeObject(claim));
+            _ = _cacheProvider.SetStringAsync($"{personReference}-{CacheKeys.BenefitDetails}", JsonSerializer.Serialize(claim));
 
             return claim;
         }

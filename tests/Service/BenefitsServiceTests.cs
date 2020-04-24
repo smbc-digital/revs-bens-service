@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using Moq;
-using Newtonsoft.Json;
 using revs_bens_service.Services.Benefits;
 using revs_bens_service.Utils.StorageProvider;
 using StockportGovUK.NetStandard.Gateways.CivicaServiceGateway;
@@ -20,7 +20,7 @@ namespace revs_bens_service_tests.Service
 
         #region Test Models
 
-        private readonly string _mockListBenefitClaimSummary = JsonConvert.SerializeObject(new List<BenefitsClaimSummary>
+        private readonly string _mockListBenefitClaimSummary = JsonSerializer.Serialize(new List<BenefitsClaimSummary>
         {
             new BenefitsClaimSummary
             {
@@ -36,7 +36,7 @@ namespace revs_bens_service_tests.Service
             }
         });
 
-        private readonly string _mockBenefitsClaim = JsonConvert.SerializeObject(new BenefitsClaim
+        private readonly string _mockBenefitsClaim = JsonSerializer.Serialize(new BenefitsClaim
         {
             PersonName = new PersonName{
                 Forenames = "Test",
@@ -71,7 +71,7 @@ namespace revs_bens_service_tests.Service
             }
         });
 
-        private readonly string _mockCouncilTaxDocument = JsonConvert.SerializeObject(new List<CouncilTaxDocument>
+        private readonly string _mockCouncilTaxDocument = JsonSerializer.Serialize(new List<CouncilTaxDocument>
         {
             new CouncilTaxDocument
             {
@@ -84,7 +84,7 @@ namespace revs_bens_service_tests.Service
             }
         });
 
-        private readonly string _mockReceivedYearTotal = JsonConvert.SerializeObject(new ReceivedYearTotal
+        private readonly string _mockReceivedYearTotal = JsonSerializer.Serialize(new ReceivedYearTotal
         {
             BalanceOutstanding = "10.2",
             TotalBenefits = "323.25",
@@ -92,7 +92,7 @@ namespace revs_bens_service_tests.Service
             TotalPayments = "400.25"
         });
 
-        private readonly string _mockListCouncilTaxPayments = JsonConvert.SerializeObject(new List<PaymentDetail>
+        private readonly string _mockListCouncilTaxPayments = JsonSerializer.Serialize(new List<PaymentDetail>
         {
             new PaymentDetail
             {
@@ -219,7 +219,7 @@ namespace revs_bens_service_tests.Service
         public async void GetBenefits_ShouldCallCacheProvider_WithGetStringAsync()
         {
             // Arrange
-            var model = JsonConvert.SerializeObject(new Claim());
+            var model = JsonSerializer.Serialize(new Claim());
             _cache
                 .Setup(_ => _.GetStringAsync(It.IsAny<string>()))
                 .ReturnsAsync(model);

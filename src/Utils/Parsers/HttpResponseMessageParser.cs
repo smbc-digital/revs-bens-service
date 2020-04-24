@@ -1,6 +1,6 @@
 using System;
 using System.Net.Http;
-using Newtonsoft.Json;
+using System.Text.Json;
 using StockportGovUK.NetStandard.Gateways.Response;
 
 namespace revs_bens_service.Utils.Parsers
@@ -14,7 +14,7 @@ namespace revs_bens_service.Utils.Parsers
             try
             {
                 var content = responseMessage.Content.ReadAsStringAsync().Result;
-                deserializedObject = JsonConvert.DeserializeObject<T>(content);
+                deserializedObject = JsonSerializer.Deserialize<T>(content);
             }
             catch (Exception)
             {

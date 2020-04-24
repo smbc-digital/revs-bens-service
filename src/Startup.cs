@@ -2,19 +2,15 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using revs_bens_service.Services.Availability;
-using revs_bens_service.Services.Benefits;
-using revs_bens_service.Services.CouncilTax;
 using revs_bens_service.Utils.HealthChecks;
+using revs_bens_service.Utils.ServiceCollectionExtensions;
 using revs_bens_service.Utils.StorageProvider;
 using StockportGovUK.AspNetCore.Availability;
 using StockportGovUK.AspNetCore.Availability.Middleware;
 using StockportGovUK.NetStandard.Gateways;
-using StockportGovUK.NetStandard.Gateways.CivicaServiceGateway;
 using StockportGovUK.AspNetCore.Middleware;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Hosting;
-using revs_bens_service.Utils.ServiceCollectionExtensions;
 
 namespace revs_bens_service
 {

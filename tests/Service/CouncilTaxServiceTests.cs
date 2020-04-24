@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using Moq;
-using Newtonsoft.Json;
 using revs_bens_service.Services.CouncilTax;
 using revs_bens_service.Utils.StorageProvider;
 using StockportGovUK.NetStandard.Gateways.CivicaServiceGateway;
@@ -20,7 +20,7 @@ namespace revs_bens_service_tests.Service
 
         #region Test models
 
-        private readonly string _mockCouncilTaxAccountsResponse = JsonConvert.SerializeObject(new List<CtaxActDetails>
+        private readonly string _mockCouncilTaxAccountsResponse = JsonSerializer.Serialize(new List<CtaxActDetails>
         {
             new CtaxActDetails
             {
@@ -31,7 +31,7 @@ namespace revs_bens_service_tests.Service
             }
         });
 
-        private readonly string _mockCouncilTaxAccountResponse = JsonConvert.SerializeObject(new CouncilTaxAccountResponse
+        private readonly string _mockCouncilTaxAccountResponse = JsonSerializer.Serialize(new CouncilTaxAccountResponse
         {
             PersonName = new StockportGovUK.NetStandard.Models.Civica.CouncilTax.PersonName
             {
@@ -76,7 +76,7 @@ namespace revs_bens_service_tests.Service
             CtxActClosed = "FALSE"
         });
 
-        private readonly string _mockTransactionsResponse = JsonConvert.SerializeObject(new List<Transaction>
+        private readonly string _mockTransactionsResponse = JsonSerializer.Serialize(new List<Transaction>
         {
             new Transaction
             {
@@ -94,7 +94,7 @@ namespace revs_bens_service_tests.Service
             }
         });
 
-        private readonly string _mockPaymentsScheduleResponse = JsonConvert.SerializeObject(new List<Installment>
+        private readonly string _mockPaymentsScheduleResponse = JsonSerializer.Serialize(new List<Installment>
         {
                 new Installment
                 {
@@ -110,7 +110,7 @@ namespace revs_bens_service_tests.Service
                 }
         });
 
-        private readonly string _mockPlacesResponse = JsonConvert.SerializeObject(new Place
+        private readonly string _mockPlacesResponse = JsonSerializer.Serialize(new Place
         {
             Band = new StockportGovUK.NetStandard.Models.RevsAndBens.Band
             {
