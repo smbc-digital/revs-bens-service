@@ -228,7 +228,7 @@ namespace revs_bens_service_tests.Service
             // Arrange
             _cache
                 .Setup(_ => _.GetStringAsync(It.IsAny<string>()))
-                .ReturnsAsync("{IsDirectDebitCustomer:true}");
+                .ReturnsAsync("{\"IsDirectDebitCustomer\":true}");
 
             // Act
             await _service.GetCouncilTaxDetails("123", "5001111234", 2018);

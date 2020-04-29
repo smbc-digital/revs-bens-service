@@ -11,9 +11,9 @@ namespace revs_bens_service.Utils.ServiceCollectionExtensions
     {
         public static void RegisterServices(this IServiceCollection services)
         {
-            services.AddSingleton<IBenefitsService, BenefitsService>();
-            services.AddSingleton<ICouncilTaxService, CouncilTaxService>();
-            services.AddSingleton<IAvailabilityService, AvailabilityService>();
+            services.AddScoped<IBenefitsService, BenefitsService>();
+            services.AddScoped<ICouncilTaxService, CouncilTaxService>();
+            services.AddScoped<IAvailabilityService, AvailabilityService>();
         }
 
         public static void AddSwagger(this IServiceCollection services)
