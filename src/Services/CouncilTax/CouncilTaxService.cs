@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using revs_bens_service.Services.CouncilTax.Mappers;
 using revs_bens_service.Utils.Parsers;
 using revs_bens_service.Utils.StorageProvider;
@@ -31,7 +32,7 @@ namespace revs_bens_service.Services.CouncilTax
 
             if (!string.IsNullOrEmpty(cacheResponse))
             {
-                var cachedResponse = JsonSerializer.Deserialize<CouncilTaxDetailsModel>(cacheResponse);
+                var cachedResponse = JsonConvert.DeserializeObject<CouncilTaxDetailsModel>(cacheResponse);
                 return cachedResponse;
             }
 
@@ -42,7 +43,7 @@ namespace revs_bens_service.Services.CouncilTax
             var account = await _gateway.GetAccount(personReference, model.Accounts.FirstOrDefault(_ => _.Status == "CURRENT").Reference);
             model = account.Parse<CouncilTaxAccountResponse>().ResponseContent.MapAccount(model, DateTime.Now.Year);
 
-            _ = _cacheProvider.SetStringAsync(key, JsonSerializer.Serialize(model));
+            _ = _cacheProvider.SetStringAsync(key, JsonConvert.SerializeObject(model));
 
             return model;
         }
@@ -54,7 +55,7 @@ namespace revs_bens_service.Services.CouncilTax
 
             if (!string.IsNullOrEmpty(cacheResponse))
             {
-                var cachedResponse = JsonSerializer.Deserialize<CouncilTaxDetailsModel>(cacheResponse);
+                var cachedResponse = JsonConvert.DeserializeObject<CouncilTaxDetailsModel>(cacheResponse);
                 return cachedResponse;
             }
 
@@ -81,7 +82,7 @@ namespace revs_bens_service.Services.CouncilTax
             var isBenefitsResponse = await _gateway.IsBenefitsClaimant(personReference);
             model.HasBenefits = isBenefitsResponse.Parse<bool>().ResponseContent;
 
-            _ = _cacheProvider.SetStringAsync(key, JsonSerializer.Serialize(model));
+            _ = _cacheProvider.SetStringAsync(key, JsonConvert.SerializeObject(model));
 
             return model;
         }
@@ -93,7 +94,7 @@ namespace revs_bens_service.Services.CouncilTax
 
             if (!string.IsNullOrEmpty(cacheResponse))
             {
-                var cachedResponse = JsonSerializer.Deserialize<byte[]>(cacheResponse);
+                var cachedResponse = JsonConvert.DeserializeObject<byte[]>(cacheResponse);
                 return cachedResponse;
             }
 
@@ -106,7 +107,7 @@ namespace revs_bens_service.Services.CouncilTax
 
             var document = await response.Content.ReadAsByteArrayAsync();
 
-            _ = _cacheProvider.SetStringAsync(key, JsonSerializer.Serialize(document));
+            _ = _cacheProvider.SetStringAsync(key, JsonConvert.SerializeObject(document));
 
             return document;
         }
