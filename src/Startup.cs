@@ -56,8 +56,7 @@ namespace revs_bens_service
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint(
-                    $"{(env.IsEnvironment("local") ? string.Empty : "/revsbensservice")}/swagger/v1/swagger.json", "Revs and Bens service API");
+                c.SwaggerEndpoint("v1/swagger.json", "Revs and Bens service API");
             });
         }
     }
