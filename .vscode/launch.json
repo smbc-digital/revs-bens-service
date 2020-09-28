@@ -10,7 +10,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/src/bin/Debug/netcoreapp2.2/revs-bens-service.dll",
+            "program": "${workspaceFolder}/src/bin/Debug/netcoreapp3.1/revs-bens-service.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src",
             "stopAtEntry": false,

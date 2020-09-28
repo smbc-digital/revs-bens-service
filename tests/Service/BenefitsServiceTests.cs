@@ -6,7 +6,7 @@ using Moq;
 using Newtonsoft.Json;
 using revs_bens_service.Services.Benefits;
 using revs_bens_service.Utils.StorageProvider;
-using StockportGovUK.NetStandard.Gateways.CivicaServiceGateway;
+using StockportGovUK.NetStandard.Gateways.CivicaService;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
 using Xunit;
 

@@ -1,6 +1,6 @@
 using System.Net;
 using System.Threading.Tasks;
-using StockportGovUK.NetStandard.Gateways.CivicaServiceGateway;
+using StockportGovUK.NetStandard.Gateways.CivicaService;
 
 namespace revs_bens_service.Services.Availability
 {

@@ -1,16 +1,14 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using revs_bens_service.Utils.HealthChecks;
 using revs_bens_service.Utils.ServiceCollectionExtensions;
 using revs_bens_service.Utils.StorageProvider;
 using StockportGovUK.AspNetCore.Availability;
 using StockportGovUK.AspNetCore.Availability.Middleware;
-using StockportGovUK.NetStandard.Gateways;
-using StockportGovUK.AspNetCore.Middleware;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.Hosting;
 
 namespace revs_bens_service
 {
@@ -28,29 +26,25 @@ namespace revs_bens_service
         {
             services.AddControllers()
                     .AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
-            services.AddStorageProvider(Configuration);
-            services.AddResilientHttpClients<IGateway, Gateway>(Configuration);
-            services.AddSwagger();
-            services.AddAvailability();
+            
+            services.AddGateways(Configuration)
+                    .AddStorageProvider(Configuration)
+                    .RegisterServices()
+                    .AddSwagger();
+                    // .AddAvailability();
+
             services.AddHealthChecks()
                     .AddCheck<TestHealthCheck>("TestHealthCheck");
-
-            services.RegisterServices();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsEnvironment("local"))
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            app.UseExceptionHandler($"/api/v1/error{(env.IsDevelopment() ? "/local" : string.Empty)}");
 
             app.UseRouting();
             app.UseEndpoints(endpoints => endpoints.MapControllers());
 
-            app.UseMiddleware<Availability>();
-            app.UseMiddleware<ExceptionHandling>();
-
+            // app.UseMiddleware<Availability>();
             app.UseHealthChecks("/healthcheck", HealthCheckConfig.Options);
 
             app.UseSwagger();

@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using revs_bens_service.Services.CouncilTax.Mappers;
 using revs_bens_service.Utils.Parsers;
 using revs_bens_service.Utils.StorageProvider;
-using StockportGovUK.NetStandard.Gateways.CivicaServiceGateway;
+using StockportGovUK.NetStandard.Gateways.CivicaService;
 using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
 using Transaction = revs_bens_service.Services.Models.Transaction;

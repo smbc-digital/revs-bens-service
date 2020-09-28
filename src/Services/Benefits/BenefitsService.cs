@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using revs_bens_service.Services.Benefits.Mappers;
 using revs_bens_service.Utils.Parsers;
 using revs_bens_service.Utils.StorageProvider;
-using StockportGovUK.NetStandard.Gateways.CivicaServiceGateway;
+using StockportGovUK.NetStandard.Gateways.CivicaService;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
 
 namespace revs_bens_service.Services.Benefits
