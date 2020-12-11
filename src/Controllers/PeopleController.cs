@@ -26,57 +26,41 @@ namespace revs_bens_service.Controllers
 
         [HttpGet]
         [Route("{personReference}/is-benefits-claimant")]
-        public async Task<IActionResult> IsBenefitsClaimant([FromRoute][Required]string personReference)
-        {
-            var model = await _benefitsService.IsBenefitsClaimant(personReference);
-
-            return Ok(model);
-        }
+        public async Task<IActionResult> IsBenefitsClaimant([FromRoute][Required]string personReference) =>
+            Ok(await _benefitsService.IsBenefitsClaimant(personReference));
 
         [HttpGet]
         [Route("{personReference}/benefits")]
-        public async Task<IActionResult> GetBenefits([FromRoute][Required]string personReference)
-        {
-            var model = await _benefitsService.GetBenefits(personReference);
-
-            return Ok(model);
-        }
+        public async Task<IActionResult> GetBenefits([FromRoute][Required]string personReference) =>
+            Ok(await _benefitsService.GetBenefits(personReference));
 
         [HttpGet]
         [Route("{personReference}/council-tax")]
-        public async Task<IActionResult> GetBaseCouncilTaxAccount([FromRoute][Required]string personReference){
-            var model = await _councilTaxService.GetBaseCouncilTaxAccount(personReference);
-
-            return Ok(model);
-        }
+        public async Task<IActionResult> GetBaseCouncilTaxAccount([FromRoute][Required]string personReference) =>
+            Ok(await _councilTaxService.GetBaseCouncilTaxAccount(personReference));
 
         [HttpGet]
         [Route("{personReference}/council-tax/{accountReference}/{year}")]
         public async Task<IActionResult> GetCouncilTaxDetails(
             [FromRoute][Required]string personReference,
             [FromRoute][Required]string accountReference,
-            [FromRoute][Required]int year)
-        {
-            var model = await _councilTaxService.GetCouncilTaxDetails(personReference, accountReference, year);
-                
-            return Ok(model);
-        }
+            [FromRoute][Required]int year) =>
+                Ok(await _councilTaxService.GetCouncilTaxDetails(personReference, accountReference, year));
 
         [HttpGet]
         [Route("{personReference}/council-tax/{accountReference}/documents/{documentId}")]
-        public async Task<IActionResult> GetDocumentForAccount([FromRoute][Required]string personReference, [FromRoute][Required]string accountReference, [FromRoute][Required]string documentId)
+        public async Task<IActionResult> GetDocumentForAccount(
+            [FromRoute][Required]string personReference,
+            [FromRoute][Required]string accountReference,
+            [FromRoute][Required]string documentId)
         {
             var document = await _councilTaxService.GetDocumentForAccount(personReference, accountReference, documentId);
 
             if (document == null)
-            {
                 return NotFound();
-            }
 
-            if(document.Length == 0)
-            {
+            if (document.Length == 0)
                 return NoContent();
-            }
             
             return File(document, "application/pdf", "download.pdf");
         }

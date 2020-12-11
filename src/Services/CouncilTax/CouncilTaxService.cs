@@ -47,7 +47,10 @@ namespace revs_bens_service.Services.CouncilTax
             return model;
         }
         
-        public async Task<CouncilTaxDetailsModel> GetCouncilTaxDetails(string personReference, string accountReference, int year)
+        public async Task<CouncilTaxDetailsModel> GetCouncilTaxDetails(
+                string personReference,
+                string accountReference,
+                int year)
         {
             var key = $"{personReference}-{accountReference}-{year}-{CacheKeys.CouncilTaxDetails}";
             var cacheResponse = await _cacheProvider.GetStringAsync(key);
@@ -86,7 +89,10 @@ namespace revs_bens_service.Services.CouncilTax
             return model;
         }
 
-        public async Task<byte[]> GetDocumentForAccount(string personReference, string accountReference, string documentId)
+        public async Task<byte[]> GetDocumentForAccount(
+            string personReference,
+            string accountReference,
+            string documentId)
         {
             var key = $"{personReference}-{accountReference}-{documentId}-{CacheKeys.CouncilTaxDetails}";
             var cacheResponse = await _cacheProvider.GetStringAsync(key);

@@ -8,7 +8,9 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
 {
     public static class PaymentsMapper
     {
-        public static CouncilTaxDetailsModel MapPayments(this List<Installment> paymentResponse, CouncilTaxDetailsModel model)
+        public static CouncilTaxDetailsModel MapPayments(
+            this List<Installment> paymentResponse,
+            CouncilTaxDetailsModel model)
         {
             model.UpcomingPayments = paymentResponse.Select(_ => new InstallmentModel
             {

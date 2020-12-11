@@ -10,7 +10,10 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
     {
         private static readonly HashSet<string> ValidAccountStages = new HashSet<string> { "BIL", "RM1", "RM2" };
 
-        public static CouncilTaxDetailsModel MapAccount(this CouncilTaxAccountResponse accountResponse, CouncilTaxDetailsModel model, int taxYear)
+        public static CouncilTaxDetailsModel MapAccount(
+            this CouncilTaxAccountResponse accountResponse,
+            CouncilTaxDetailsModel model,
+            int taxYear)
         {
             model.PersonName = $"{accountResponse.PersonName.Forenames} {accountResponse.PersonName.Surname}";
             model.PaymentMethod = accountResponse.AccountDetails.ActPayGrp.PaymentMethod.Contains("DD") ? "Direct Debit" : string.Empty;
@@ -33,7 +36,9 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
             return model;
         }
 
-        public static CouncilTaxDetailsModel MapAccounts(this List<CtaxActDetails> accountsResponse, CouncilTaxDetailsModel model)
+        public static CouncilTaxDetailsModel MapAccounts(
+            this List<CtaxActDetails> accountsResponse,
+            CouncilTaxDetailsModel model)
         {
             model.Accounts = accountsResponse.Select(_ => new CouncilTaxAccountDetails
             {

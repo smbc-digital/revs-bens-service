@@ -10,7 +10,10 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
 {
     public static class DocumentMapper
     {
-        public static CouncilTaxDetailsModel DocumentsMapper(this List<CouncilTaxDocumentReference> documentResponse, CouncilTaxDetailsModel model, int taxYear)
+        public static CouncilTaxDetailsModel DocumentsMapper(
+            this List<CouncilTaxDocumentReference> documentResponse,
+            CouncilTaxDetailsModel model,
+            int taxYear)
         {
             model.Documents = documentResponse
                 .Where(_ => _.AccountReference == model.Reference)

@@ -7,20 +7,15 @@ using Microsoft.Extensions.Hosting;
 using revs_bens_service.Utils.HealthChecks;
 using revs_bens_service.Utils.ServiceCollectionExtensions;
 using revs_bens_service.Utils.StorageProvider;
-using StockportGovUK.AspNetCore.Availability;
-using StockportGovUK.AspNetCore.Availability.Middleware;
 
 namespace revs_bens_service
 {
     [ExcludeFromCodeCoverage]
     public class Startup
     {
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
-
         public IConfiguration Configuration { get; }
+        
+        public Startup(IConfiguration configuration) => Configuration = configuration;
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -30,28 +25,20 @@ namespace revs_bens_service
             services.AddGateways(Configuration)
                     .AddStorageProvider(Configuration)
                     .RegisterServices()
-                    .AddSwagger();
-                    // .AddAvailability();
-
-            services.AddHealthChecks()
+                    .AddSwagger()
+                    .AddHealthChecks()
                     .AddCheck<TestHealthCheck>("TestHealthCheck");
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-            app.UseExceptionHandler($"/api/v1/error{(env.IsDevelopment() ? "/local" : string.Empty)}");
-
-            app.UseRouting();
-            app.UseEndpoints(endpoints => endpoints.MapControllers());
-
-            // app.UseMiddleware<Availability>();
-            app.UseHealthChecks("/healthcheck", HealthCheckConfig.Options);
-
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("v1/swagger.json", "Revs and Bens service API");
-            });
-        }
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env) =>
+            app.UseExceptionHandler($"/api/v1/error{(env.IsDevelopment() ? "/local" : string.Empty)}")
+                .UseRouting()
+                .UseEndpoints(endpoints => endpoints.MapControllers())
+                .UseHealthChecks("/healthcheck", HealthCheckConfig.Options)
+                .UseSwagger()
+                .UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("v1/swagger.json", "Revs and Bens service API");
+                });
     }
 }

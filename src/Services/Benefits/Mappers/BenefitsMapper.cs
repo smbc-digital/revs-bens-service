@@ -7,9 +7,8 @@ namespace revs_bens_service.Services.Benefits.Mappers
 {
     public static class BenefitsMapper
     {
-        public static ClaimDetails MapToClaimDetails(this BenefitsClaim claim)
-        {
-            return new ClaimDetails
+        public static ClaimDetails MapToClaimDetails(this BenefitsClaim claim) =>
+            new ClaimDetails
             {
                 PersonName = $"{claim.PersonName.Forenames} {claim.PersonName.Surname}",
                 Number = claim.Number,
@@ -19,11 +18,9 @@ namespace revs_bens_service.Services.Benefits.Mappers
                 CurrentEntitlement = ParseBenefitsEntitlement(claim.BenefitEntitlement),
                 BenefitsCombination = SetBenefitsCombination(claim.BenefitEntitlement, claim.Status)
             };
-        }
 
-        public static List<BenefitsDocument> MapToDocuments(this List<CouncilTaxDocument> documents)
-        {
-            return documents.Select(_ => new BenefitsDocument
+        public static List<BenefitsDocument> MapToDocuments(this List<CouncilTaxDocument> documents) =>
+            documents.Select(_ => new BenefitsDocument
             {
                 AccountReference = _.AccountReference,
                 DateCreated = _.DateCreated,
@@ -33,11 +30,9 @@ namespace revs_bens_service.Services.Benefits.Mappers
                 Name = _.DocumentName
             })
             .ToList();
-        }
 
-        public static List<Payment> MapToPayments(this List<PaymentDetail> payments)
-        {
-            return payments.Select(_ => new Payment
+        public static List<Payment> MapToPayments(this List<PaymentDetail> payments) =>
+            payments.Select(_ => new Payment
             {
                 DatePaid = _.DatePaid,
                 Amount = _.PayAmount,
@@ -49,11 +44,9 @@ namespace revs_bens_service.Services.Benefits.Mappers
                 CouncilTaxReference = _.CouncilTaxReference
             })
             .ToList();
-        }
 
-        private static ClaimNextPayment SetNextPayment(BenefitsClaim claim)
-        {
-            return new ClaimNextPayment
+        private static ClaimNextPayment SetNextPayment(BenefitsClaim claim) =>
+            new ClaimNextPayment
             {
                 Amount = claim.NextPayment.Amount,
                 Method = claim.NextPayment.Method,
@@ -63,9 +56,11 @@ namespace revs_bens_service.Services.Benefits.Mappers
                 Schedule = claim.NextPayment.Schedule,
                 Status = SetPaymentStatus(claim.NextPayment.Amount, claim.BenefitEntitlement, claim.NextPayment.Schedule)
             };
-        }
 
-        private static EPaymentStatus SetPaymentStatus(string amount, BenefitEntitlement benefitEntitlement, string paymentSchedule)
+        private static EPaymentStatus SetPaymentStatus(
+            string amount,
+            BenefitEntitlement benefitEntitlement,
+            string paymentSchedule)
         {
             var weeks = 0;
 
@@ -97,42 +92,29 @@ namespace revs_bens_service.Services.Benefits.Mappers
             var actualPayment = nextPaymentAmount / weeks;
 
             if (actualPayment == expectedPayment)
-            {
                 return EPaymentStatus.Expected;
-            }
 
             return actualPayment < expectedPayment
                 ? EPaymentStatus.Reduced
                 : EPaymentStatus.Increased;
         }
 
-        private static string ParseStatusCode(string statusCode)
-        {
-            switch (statusCode)
+        private static string ParseStatusCode(string statusCode) =>
+            statusCode switch
             {
-                case "1":
-                    return "Current";
-                case "2":
-                    return "Future";
-                case "3":
-                    return "Cancelled";
-                case "4":
-                    return "Pending";
-                case "5":
-                    return "Suspended";
-                case "6":
-                    return "Defective";
-                default:
-                    return "Unknown";
-            }
-        }
+                "1" => "Current",
+                "2" => "Future",
+                "3" => "Cancelled",
+                "4" => "Pending",
+                "5" => "Suspended",
+                "6" => "Defective",
+                _   => "Unknown"
+            };
 
         private static CurrentEntitlement ParseBenefitsEntitlement(BenefitEntitlement benefitsEntitlement)
         {
             if (benefitsEntitlement == null)
-            {
                 return new CurrentEntitlement();
-            }
 
             var ctax = benefitsEntitlement.CouncilTax != null
                 ? benefitsEntitlement.CouncilTax.WeeklyBenefit
@@ -142,9 +124,7 @@ namespace revs_bens_service.Services.Benefits.Mappers
             var housingBenefit = "0.00";
 
             if (rentType != null)
-            {
                 housingBenefit = rentType.WeeklyBenefit;
-            }
 
             return new CurrentEntitlement
             {
@@ -153,7 +133,9 @@ namespace revs_bens_service.Services.Benefits.Mappers
             };
         }
 
-        private static BenefitsCombinationEnum SetBenefitsCombination(BenefitEntitlement benefitEntitlement, string claimStatus)
+        private static BenefitsCombinationEnum SetBenefitsCombination(
+            BenefitEntitlement benefitEntitlement,
+            string claimStatus)
         {
             var benefitsCombo = string.Empty;
 
@@ -169,17 +151,13 @@ namespace revs_bens_service.Services.Benefits.Mappers
             benefitsCombo += housingBenefit == "0.00" && ParseStatusCode(claimStatus) == "Current" ? string.Empty : "[HB]";
             benefitsCombo += ctax == "0.00" ? string.Empty : "[CTS]";
 
-            switch (benefitsCombo)
+            return benefitsCombo switch
             {
-                case "[HB]":
-                    return BenefitsCombinationEnum.HousingBenefitOnly;
-                case "[CTS]":
-                    return BenefitsCombinationEnum.CouncilTaxSupportOnly;
-                case "[HB][CTS]":
-                    return BenefitsCombinationEnum.AllBenefits;
-                default:
-                    return BenefitsCombinationEnum.HousingBenefitOnly;
-            }
+                "[HB]"      => BenefitsCombinationEnum.HousingBenefitOnly,
+                "[CTS]"     => BenefitsCombinationEnum.CouncilTaxSupportOnly,
+                "[HB][CTS]" => BenefitsCombinationEnum.AllBenefits,
+                _           => BenefitsCombinationEnum.HousingBenefitOnly
+            };
         }
     }
 }

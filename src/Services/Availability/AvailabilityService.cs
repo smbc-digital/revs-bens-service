@@ -8,10 +8,7 @@ namespace revs_bens_service.Services.Availability
     {
         private readonly ICivicaServiceGateway _civicaServiceGateway;
 
-        public AvailabilityService(ICivicaServiceGateway civicaServiceGateway)
-        {
-            _civicaServiceGateway = civicaServiceGateway;
-        }
+        public AvailabilityService(ICivicaServiceGateway civicaServiceGateway) => _civicaServiceGateway = civicaServiceGateway;
 
         public async Task<bool> GetCivicaAvailability()
         {

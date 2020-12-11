@@ -14,18 +14,13 @@ namespace revs_bens_service.Controllers
     {
         private readonly IAvailabilityService _availabilityService;
 
-        public AvailabilityController(IAvailabilityService availabilityService)
-        {
-            _availabilityService = availabilityService;
-        }
+        public AvailabilityController(IAvailabilityService availabilityService) => _availabilityService = availabilityService;
 
         [HttpGet]
         [Route("civica")]
-        public async Task<IActionResult> GetCivicaAvailability()
-        {
-            return await _availabilityService.GetCivicaAvailability()
+        public async Task<IActionResult> GetCivicaAvailability() =>
+            await _availabilityService.GetCivicaAvailability()
                 ? Ok()
                 : StatusCode(StatusCodes.Status424FailedDependency);
-        }
     }
 }

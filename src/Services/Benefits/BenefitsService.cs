@@ -59,10 +59,14 @@ namespace revs_bens_service.Services.Benefits
             return claim;
         }
 
-        private async Task<ClaimDetails> GetDetails(string personReference, string claimNumber, string placeReference)
+        private async Task<ClaimDetails> GetDetails(
+            string personReference,
+            string claimNumber,
+            string placeReference)
         {
             var response = await _civicaServiceGateway.GetBenefitDetails(personReference, claimNumber, placeReference);
             var benefitsClaim = response.Parse<BenefitsClaim>().ResponseContent;
+
             return benefitsClaim.MapToClaimDetails();
         }
 
@@ -70,6 +74,7 @@ namespace revs_bens_service.Services.Benefits
         {
             var response = await _civicaServiceGateway.GetDocuments(personReference);
             var documents = response.Parse<List<CouncilTaxDocument>>().ResponseContent;
+
             return documents?.MapToDocuments().Where(_ => _.Type == "Notif").ToList() ?? new List<BenefitsDocument>();
         }
 
@@ -77,6 +82,7 @@ namespace revs_bens_service.Services.Benefits
         {
             var response = await _civicaServiceGateway.GetHousingBenefitPaymentHistory(personReference);
             var payments = response.Parse<List<PaymentDetail>>().ResponseContent;
+
             return payments?.MapToPayments() ?? new List<Payment>();
         }
 
@@ -84,6 +90,7 @@ namespace revs_bens_service.Services.Benefits
         {
             var response = await _civicaServiceGateway.GetCouncilTaxBenefitPaymentHistory(personReference);
             var payments = response.Parse<List<PaymentDetail>>().ResponseContent;
+
             return payments?.MapToPayments() ?? new List<Payment>();
         }
 

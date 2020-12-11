@@ -9,7 +9,9 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
 {
     public static class TransactionsMapper
     {
-        public static CouncilTaxDetailsModel MapTransactions(this List<Transaction> transactionResponse, CouncilTaxDetailsModel model)
+        public static CouncilTaxDetailsModel MapTransactions(
+            this List<Transaction> transactionResponse,
+            CouncilTaxDetailsModel model)
         {
             model.TransactionHistory = transactionResponse
                 .Where(t => t.TranType != "Charge" && t.TranType != "REFUNDS" && t.TranType != "PAYMENTS")
@@ -36,7 +38,9 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
             return model;
         }
 
-        private static bool IsCredit(decimal amount, string type)
+        private static bool IsCredit(
+            decimal amount,
+            string type)
         {
             if (Types.Contains(type.ToLower()))
             {
@@ -46,7 +50,10 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
             return amount > 0;
         }
 
-        private static string GetDescription(string transactionType, string method, string postcode)
+        private static string GetDescription(
+            string transactionType,
+            string method,
+            string postcode)
         {
             if (PropertyBasedTranTypes.Contains(transactionType.ToLower()))
             {
