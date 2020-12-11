@@ -5,7 +5,7 @@ using Microsoft.OpenApi.Models;
 using revs_bens_service.Services.Availability;
 using revs_bens_service.Services.Benefits;
 using revs_bens_service.Services.CouncilTax;
-using StockportGovUK.NetStandard.Gateways;
+using StockportGovUK.NetStandard.Gateways.CivicaService;
 using StockportGovUK.NetStandard.Gateways.Extensions;
 
 namespace revs_bens_service.Utils.ServiceCollectionExtensions
@@ -14,7 +14,7 @@ namespace revs_bens_service.Utils.ServiceCollectionExtensions
     {
         public static IServiceCollection AddGateways(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddHttpClient<IGateway, Gateway>(configuration);
+            services.AddHttpClient<ICivicaServiceGateway, CivicaServiceGateway>(configuration);
 
             return services;
         }
