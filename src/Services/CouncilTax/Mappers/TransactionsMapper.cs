@@ -14,6 +14,7 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
             CouncilTaxDetailsModel model)
         {
             model.TransactionHistory = transactionResponse
+                .Where(t => t.TranType != null)
                 .Where(t => t.TranType != "Charge" && t.TranType != "REFUNDS" && t.TranType != "PAYMENTS")
                 .Select(transaction => new TransactionModelExtension
                 {
@@ -25,6 +26,7 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
                 }).Distinct().ToList<TransactionModel>();
 
             model.PreviousPayments = transactionResponse
+                .Where(t => t.TranType != null)
                 .Where(t => t.TranType == "PAYMENTS" || t.TranType == "REFUNDS")
                 .Select(transaction => new TransactionModelExtension
                 {
