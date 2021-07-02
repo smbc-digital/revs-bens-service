@@ -52,7 +52,8 @@ namespace revs_bens_service.Services.CouncilTax
                 string accountReference,
                 int year)
         {
-            var key = $"{personReference}-{accountReference}-{year}-{CacheKeys.CouncilTaxDetails}";
+            var trimmedAccountReference = accountReference.Trim();
+            var key = $"{personReference}-{trimmedAccountReference}-{year}-{CacheKeys.CouncilTaxDetails}";
             var cacheResponse = await _cacheProvider.GetStringAsync(key);
 
             if (!string.IsNullOrEmpty(cacheResponse))
@@ -63,19 +64,19 @@ namespace revs_bens_service.Services.CouncilTax
 
             var model = new CouncilTaxDetailsModel();
 
-            var accountResponse = await _gateway.GetAccount(personReference, accountReference);
+            var accountResponse = await _gateway.GetAccount(personReference, trimmedAccountReference);
             model = accountResponse.Parse<CouncilTaxAccountResponse>().ResponseContent.MapAccount(model, year);
 
             var accountsResponse = await _gateway.GetAccounts(personReference);
             model = accountsResponse.Parse<List<CtaxActDetails>>().ResponseContent.MapAccounts(model);
 
-            var transactionsResponse = await _gateway.GetAllTransactionsForYear(personReference, accountReference, year);
+            var transactionsResponse = await _gateway.GetAllTransactionsForYear(personReference, trimmedAccountReference, year);
             model = transactionsResponse.Parse<List<Transaction>>().ResponseContent.MapTransactions(model);
 
             var paymentResponse = await _gateway.GetPaymentSchedule(personReference, year);
             model = paymentResponse.Parse<List<Installment>>().ResponseContent.MapPayments(model);
 
-            var currentPropertyResponse = await _gateway.GetCurrentProperty(personReference, accountReference);
+            var currentPropertyResponse = await _gateway.GetCurrentProperty(personReference, trimmedAccountReference);
             model = currentPropertyResponse.Parse<Place>().ResponseContent.MapCurrentProperty(model);
 
             var documentsResponse = await _gateway.GetDocuments(personReference);
@@ -94,7 +95,8 @@ namespace revs_bens_service.Services.CouncilTax
             string accountReference,
             string documentId)
         {
-            var key = $"{personReference}-{accountReference}-{documentId}-{CacheKeys.CouncilTaxDetails}";
+            var trimmedAccountReference = accountReference.Trim();
+            var key = $"{personReference}-{trimmedAccountReference}-{documentId}-{CacheKeys.CouncilTaxDetails}";
             var cacheResponse = await _cacheProvider.GetStringAsync(key);
 
             if (!string.IsNullOrEmpty(cacheResponse))
@@ -103,7 +105,7 @@ namespace revs_bens_service.Services.CouncilTax
                 return cachedResponse;
             }
 
-            var response = await _gateway.GetDocumentForAccount(personReference, accountReference, documentId);
+            var response = await _gateway.GetDocumentForAccount(personReference, trimmedAccountReference, documentId);
 
             if (response.StatusCode == HttpStatusCode.NotFound)
             {

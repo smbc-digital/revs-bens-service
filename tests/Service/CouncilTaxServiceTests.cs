@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Moq;
 using Newtonsoft.Json;
 using revs_bens_service.Services.CouncilTax;
@@ -181,6 +182,14 @@ namespace revs_bens_service_tests.Service
                     StatusCode = HttpStatusCode.OK,
                     Content = new StringContent("false")
                 });
+
+            _mockGateway
+                .Setup(_ => _.GetDocumentForAccount(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent("[]")
+                });
         }
 
         [Fact]
@@ -195,6 +204,21 @@ namespace revs_bens_service_tests.Service
             _mockGateway.Verify(_ => _.GetPaymentSchedule(It.IsAny<string>(), It.IsAny<int>()), Times.Once);
             _mockGateway.Verify(_ => _.GetCurrentProperty(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
             _mockGateway.Verify(_ => _.IsBenefitsClaimant(It.IsAny<string>()), Times.Once);
+        }
+
+        [Theory]
+        [InlineData(" 123456 ", "123456")]
+        [InlineData("     123456", "123456")]
+        [InlineData("123456    ", "123456")]
+        public async void GetCouncilTaxDetails_ShouldUseTrimmedAccountReference(string accountReference, string expectedAccountReference)
+        {
+            // Act
+            await _service.GetCouncilTaxDetails("123", accountReference, 2018);
+
+            // Assert
+            _mockGateway.Verify(_ => _.GetAccount(It.IsAny<string>(), expectedAccountReference), Times.Once);
+            _mockGateway.Verify(_ => _.GetAllTransactionsForYear(It.IsAny<string>(), expectedAccountReference, It.IsAny<int>()), Times.Once);
+            _mockGateway.Verify(_ => _.GetCurrentProperty(It.IsAny<string>(), expectedAccountReference), Times.Once);
         }
 
         [Fact]
@@ -239,6 +263,75 @@ namespace revs_bens_service_tests.Service
             _mockGateway.Verify(_ => _.GetPaymentSchedule(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
             _mockGateway.Verify(_ => _.GetCurrentProperty(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
             _mockGateway.Verify(_ => _.IsBenefitsClaimant(It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task GetDocumentForAccount_ShouldCallCacheProvider()
+        {
+            // Act
+            await _service.GetDocumentForAccount("personReference", "accountReference", "documentId");
+
+            // Assert
+            _cache.Verify(_ => _.GetStringAsync(It.IsAny<string>()), Times.Once);
+            _cache.Verify(_ => _.SetStringAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetDocumentForAccount_ShouldNotCallGatewayOrCacheProvider_IfCacheAvailable()
+        {
+            // Arrange
+            var cacheResponse = JsonConvert.SerializeObject(new byte[1]);
+            _cache
+                .Setup(_ => _.GetStringAsync(It.IsAny<string>()))
+                .ReturnsAsync(cacheResponse);
+
+            // Act
+            await _service.GetDocumentForAccount("personReference", "accountReference", "documentId");
+
+            // Assert
+            _mockGateway.Verify(_ => _.GetDocumentForAccount(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _cache.Verify(_ => _.SetStringAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Theory]
+        [InlineData(" 123456 ", "123456")]
+        [InlineData("    123456", "123456")]
+        [InlineData("123456    ", "123456")]
+        public async Task GetDocumentForAccount_ShouldCallGateway_WithTrimmedAccountReference(string accountReference, string expectedAccountReference)
+        {
+            // Act
+            await _service.GetDocumentForAccount("personReference", accountReference, "documentId");
+
+            // Assert
+            _mockGateway.Verify(_ => _.GetDocumentForAccount(It.IsAny<string>(), expectedAccountReference, It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetDocumentForAccount_ShouldReturnNull_IfDocumentNotFound()
+        {
+            // Arrange
+            _mockGateway
+                .Setup(_ => _.GetDocumentForAccount(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.NotFound
+                });
+
+            // Act
+            var result = await _service.GetDocumentForAccount("personReference", "accountReference", "documentId");
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task GetDocumentForAccount_ShouldReturnByteArray()
+        {
+            // Act
+            var result = await _service.GetDocumentForAccount("personReference", "accountReference", "documentId");
+
+            // Assert
+            Assert.IsType<byte[]>(result);
         }
     }
 }
