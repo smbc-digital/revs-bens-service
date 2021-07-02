@@ -45,7 +45,7 @@ namespace revs_bens_service.Controllers
             [FromRoute][Required]string personReference,
             [FromRoute][Required]string accountReference,
             [FromRoute][Required]int year) =>
-                Ok(await _councilTaxService.GetCouncilTaxDetails(personReference, accountReference, year));
+                Ok(await _councilTaxService.GetCouncilTaxDetails(personReference, accountReference.Trim(), year));
 
         [HttpGet]
         [Route("{personReference}/council-tax/{accountReference}/documents/{documentId}")]
@@ -54,7 +54,7 @@ namespace revs_bens_service.Controllers
             [FromRoute][Required]string accountReference,
             [FromRoute][Required]string documentId)
         {
-            var document = await _councilTaxService.GetDocumentForAccount(personReference, accountReference, documentId);
+            var document = await _councilTaxService.GetDocumentForAccount(personReference, accountReference.Trim(), documentId);
 
             if (document == null)
                 return NotFound();

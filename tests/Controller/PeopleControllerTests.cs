@@ -120,10 +120,28 @@ namespace revs_bens_service_tests.Controller
                 .ReturnsAsync(It.IsAny<CouncilTaxDetailsModel>());
 
             // Act
-            await _controller.GetCouncilTaxDetails(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>());
+            await _controller.GetCouncilTaxDetails("personReference", "accountReference", 2021);
 
             // Assert
             _mockCouncilTaxService.Verify(_ => _.GetCouncilTaxDetails(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()), Times.Once);
+        }
+
+        [Theory]
+        [InlineData(" 123456 ", "123456")]
+        [InlineData("    123456", "123456")]
+        [InlineData("123456     ", "123456")]
+        public async void GetCouncilTaxDetails_ShouldCallCouncilTaxService_WithTrimmedAccountReference(string accountReference, string expectedAccountReferenceValue)
+        {
+            // Arrange
+            _mockCouncilTaxService
+                .Setup(_ => _.GetCouncilTaxDetails(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
+                .ReturnsAsync(It.IsAny<CouncilTaxDetailsModel>());
+
+            // Act
+            await _controller.GetCouncilTaxDetails("personReference", accountReference, 2021);
+
+            // Assert
+            _mockCouncilTaxService.Verify(_ => _.GetCouncilTaxDetails(It.IsAny<string>(), expectedAccountReferenceValue, It.IsAny<int>()), Times.Once);
         }
 
         [Fact]
@@ -135,7 +153,7 @@ namespace revs_bens_service_tests.Controller
                 .ReturnsAsync(It.IsAny<CouncilTaxDetailsModel>());
 
             // Act
-            var result = await _controller.GetCouncilTaxDetails(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>());
+            var result = await _controller.GetCouncilTaxDetails("personReference", "accountReference", 2021);
 
             // Assert
             Assert.IsType<OkObjectResult>(result);
@@ -150,11 +168,88 @@ namespace revs_bens_service_tests.Controller
                 .ReturnsAsync(new CouncilTaxDetailsModel());
 
             // Act
-            var result = await _controller.GetCouncilTaxDetails(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>());
+            var result = await _controller.GetCouncilTaxDetails("personReference", "accountReference", 2021);
 
             // Assert
             var resultObject = Assert.IsType<OkObjectResult>(result);
             Assert.IsType<CouncilTaxDetailsModel>(resultObject.Value);
+        }
+
+        [Fact]
+        public async void GetDocumentForAccount_ShouldCallCouncilTaxService()
+        {
+            // Arrange
+            _mockCouncilTaxService
+                .Setup(_ => _.GetDocumentForAccount(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(new byte[1]);
+
+            // Act
+            await _controller.GetDocumentForAccount("personReference", "accountReference", "documentId");
+
+            // Assert
+            _mockCouncilTaxService.Verify(_ => _.GetDocumentForAccount(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        [Theory]
+        [InlineData(" 123456 ", "123456")]
+
+        public async void GetDocumentForAccount_ShouldCallCouncilTaxService_WithTrimmedAccountReference(string accountReference, string expectedAccountReferenceValue)
+        {
+            // Arrange
+            _mockCouncilTaxService
+                .Setup(_ => _.GetDocumentForAccount(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(new byte[1]);
+
+            // Act
+            await _controller.GetDocumentForAccount("personReference", accountReference, "documentId");
+
+            // Assert
+            _mockCouncilTaxService.Verify(_ => _.GetDocumentForAccount(It.IsAny<string>(), expectedAccountReferenceValue, It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async void GetDocumentForAccount_ShouldReturnNotFound_IfDocumentIsNull()
+        {
+            // Arrange
+            _mockCouncilTaxService
+                .Setup(_ => _.GetDocumentForAccount(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync((byte[]) null);
+
+            // Act
+            var result  = await _controller.GetDocumentForAccount("personReference", "accountReference", "documentId");
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async void GetDocumentForAccount_ShouldReturnNoContent_IfByteArrayIsEmpty()
+        {
+            // Arrange
+            _mockCouncilTaxService
+                .Setup(_ => _.GetDocumentForAccount(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(new byte[0]);
+
+            // Act
+            var result = await _controller.GetDocumentForAccount("personReference", "accountReference", "documentId");
+
+            // Assert
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async void GetDocumentForAccount_ShouldReturnFileContentResult()
+        {
+            // Arrange
+            _mockCouncilTaxService
+                .Setup(_ => _.GetDocumentForAccount(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(new byte[1]);
+
+            // Act
+            var result = await _controller.GetDocumentForAccount("personReference", "accountReference", "documentId");
+
+            // Assert
+            Assert.IsType<FileContentResult>(result);
         }
     }
 }
