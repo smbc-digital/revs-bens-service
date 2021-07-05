@@ -30,16 +30,15 @@ namespace revs_bens_service.Services.CouncilTax
             var cacheResponse = await _cacheProvider.GetStringAsync(key);
 
             if (!string.IsNullOrEmpty(cacheResponse))
-            {
-                var cachedResponse = JsonConvert.DeserializeObject<CouncilTaxDetailsModel>(cacheResponse);
-                return cachedResponse;
-            }
+                return JsonConvert.DeserializeObject<CouncilTaxDetailsModel>(cacheResponse);
 
             var accountsResponse = await _gateway.GetAccounts(personReference);
-            
-            var model = new CouncilTaxDetailsModel();
-            model = accountsResponse.Parse<List<CtaxActDetails>>().ResponseContent.MapAccounts(model);
-            var account = await _gateway.GetAccount(personReference, model.Accounts.FirstOrDefault(_ => _.Status == "CURRENT").Reference);
+            var model = accountsResponse.Parse<List<CtaxActDetails>>().ResponseContent.MapAccounts(new CouncilTaxDetailsModel());
+            var reference = model.Accounts.Any(_ => _.Status.Equals("CURRENT"))
+                ? model.Accounts.First(_ => _.Status == "CURRENT").Reference
+                : model.Accounts.First().Reference;
+
+            var account = await _gateway.GetAccount(personReference, reference);
             model = account.Parse<CouncilTaxAccountResponse>().ResponseContent.MapAccount(model, DateTime.Now.Year);
 
             _ = _cacheProvider.SetStringAsync(key, JsonConvert.SerializeObject(model));
@@ -47,20 +46,14 @@ namespace revs_bens_service.Services.CouncilTax
             return model;
         }
         
-        public async Task<CouncilTaxDetailsModel> GetCouncilTaxDetails(
-                string personReference,
-                string accountReference,
-                int year)
+        public async Task<CouncilTaxDetailsModel> GetCouncilTaxDetails(string personReference, string accountReference, int year)
         {
             var trimmedAccountReference = accountReference.Trim();
             var key = $"{personReference}-{trimmedAccountReference}-{year}-{CacheKeys.CouncilTaxDetails}";
             var cacheResponse = await _cacheProvider.GetStringAsync(key);
 
             if (!string.IsNullOrEmpty(cacheResponse))
-            {
-                var cachedResponse = JsonConvert.DeserializeObject<CouncilTaxDetailsModel>(cacheResponse);
-                return cachedResponse;
-            }
+                return JsonConvert.DeserializeObject<CouncilTaxDetailsModel>(cacheResponse);
 
             var model = new CouncilTaxDetailsModel();
 
@@ -90,27 +83,19 @@ namespace revs_bens_service.Services.CouncilTax
             return model;
         }
 
-        public async Task<byte[]> GetDocumentForAccount(
-            string personReference,
-            string accountReference,
-            string documentId)
+        public async Task<byte[]> GetDocumentForAccount(string personReference, string accountReference, string documentId)
         {
             var trimmedAccountReference = accountReference.Trim();
             var key = $"{personReference}-{trimmedAccountReference}-{documentId}-{CacheKeys.CouncilTaxDetails}";
             var cacheResponse = await _cacheProvider.GetStringAsync(key);
 
             if (!string.IsNullOrEmpty(cacheResponse))
-            {
-                var cachedResponse = JsonConvert.DeserializeObject<byte[]>(cacheResponse);
-                return cachedResponse;
-            }
+                return JsonConvert.DeserializeObject<byte[]>(cacheResponse);
 
             var response = await _gateway.GetDocumentForAccount(personReference, trimmedAccountReference, documentId);
 
             if (response.StatusCode == HttpStatusCode.NotFound)
-            {
                 return null;
-            }
 
             var document = await response.Content.ReadAsByteArrayAsync();
 
