@@ -22,5 +22,12 @@ namespace revs_bens_service.Controllers
             await _availabilityService.GetCivicaAvailability()
                 ? Ok()
                 : StatusCode(StatusCodes.Status424FailedDependency);
+
+        [HttpGet]
+        [Route("civica-brokers")]
+        public async Task<IActionResult> GetCivicaBrokersAvailability() =>
+            await _availabilityService.GetCivicaBrokersAvailability()
+                ? Ok()
+                : StatusCode(StatusCodes.Status424FailedDependency);
     }
 }

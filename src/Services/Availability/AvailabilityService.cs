@@ -16,5 +16,12 @@ namespace revs_bens_service.Services.Availability
 
             return result.StatusCode == HttpStatusCode.OK;
         }
+
+        public async Task<bool> GetCivicaBrokersAvailability()
+        {
+            var result = await _civicaServiceGateway.GetAnonymousAvailability();
+
+            return result.StatusCode == HttpStatusCode.OK;
+        }
     }
 }
