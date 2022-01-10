@@ -159,7 +159,7 @@ namespace revs_bens_service_tests.Service
                });
 
             _mockGateway
-              .Setup(_ => _.GetAccountDetailsForYear("test-ref", "500000000", DateTime.Now.Year))
+              .Setup(_ => _.GetAccountDetailsForYear(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
               .ReturnsAsync(new HttpResponseMessage
               {
                   StatusCode = HttpStatusCode.OK,
@@ -212,7 +212,7 @@ namespace revs_bens_service_tests.Service
             _mockGateway.Verify(_ => _.GetDocuments("test-ref"), Times.Once);
             _mockGateway.Verify(_ => _.GetHousingBenefitPaymentHistory("test-ref"), Times.Once);
             _mockGateway.Verify(_ => _.GetCouncilTaxBenefitPaymentHistory("test-ref"), Times.AtLeastOnce);
-            _mockGateway.Verify(_ => _.GetAccountDetailsForYear("test-ref", "500000000", DateTime.Now.Year), Times.Once);
+            _mockGateway.Verify(_ => _.GetAccountDetailsForYear("test-ref", "500000000", It.IsAny<int>()), Times.Once);
         }
 
         [Fact]
