@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Moq;
 using Newtonsoft.Json;
+using revs_bens_service.Services.Benefits;
 using revs_bens_service.Services.CouncilTax;
 using revs_bens_service.Utils.StorageProvider;
 using StockportGovUK.NetStandard.Gateways.CivicaService;
@@ -18,6 +19,7 @@ namespace revs_bens_service_tests.Service
         private readonly CouncilTaxService _service;
         private readonly Mock<ICivicaServiceGateway> _mockGateway = new Mock<ICivicaServiceGateway>();
         private readonly Mock<ICacheProvider> _cache = new Mock<ICacheProvider>();
+        private readonly Mock<IBenefitsService> _mockBenefitsService = new Mock<IBenefitsService>();
 
         #region Test models
 
@@ -125,7 +127,7 @@ namespace revs_bens_service_tests.Service
 
         public CouncilTaxServiceTests()
         {
-            _service = new CouncilTaxService(_mockGateway.Object, _cache.Object);
+            _service = new CouncilTaxService(_mockGateway.Object, _cache.Object, _mockBenefitsService.Object);
 
             _mockGateway
                 .Setup(_ => _.GetAccounts(It.IsAny<string>()))
@@ -175,13 +177,9 @@ namespace revs_bens_service_tests.Service
                     Content = new StringContent("[]")
                 });
 
-            _mockGateway
+            _mockBenefitsService
                 .Setup(_ => _.IsBenefitsClaimant(It.IsAny<string>()))
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("false")
-                });
+                .ReturnsAsync(false);
 
             _mockGateway
                 .Setup(_ => _.GetDocumentForAccount(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
@@ -203,7 +201,7 @@ namespace revs_bens_service_tests.Service
             _mockGateway.Verify(_ => _.GetAllTransactionsForYear(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()), Times.Once);
             _mockGateway.Verify(_ => _.GetPaymentSchedule(It.IsAny<string>(), It.IsAny<int>()), Times.Once);
             _mockGateway.Verify(_ => _.GetCurrentProperty(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-            _mockGateway.Verify(_ => _.IsBenefitsClaimant(It.IsAny<string>()), Times.Once);
+            _mockBenefitsService.Verify(_ => _.IsBenefitsClaimant(It.IsAny<string>()), Times.Once);
         }
 
         [Theory]
@@ -262,7 +260,7 @@ namespace revs_bens_service_tests.Service
             _mockGateway.Verify(_ => _.GetAllTransactionsForYear(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()), Times.Never);
             _mockGateway.Verify(_ => _.GetPaymentSchedule(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
             _mockGateway.Verify(_ => _.GetCurrentProperty(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
-            _mockGateway.Verify(_ => _.IsBenefitsClaimant(It.IsAny<string>()), Times.Never);
+            _mockBenefitsService.Verify(_ => _.IsBenefitsClaimant(It.IsAny<string>()), Times.Never);
         }
 
         [Fact]

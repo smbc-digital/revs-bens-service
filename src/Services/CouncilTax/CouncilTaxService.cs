@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using revs_bens_service.Services.Benefits;
 using revs_bens_service.Services.CouncilTax.Mappers;
 using revs_bens_service.Utils.Parsers;
 using revs_bens_service.Utils.StorageProvider;
@@ -18,11 +19,13 @@ namespace revs_bens_service.Services.CouncilTax
     {
         private readonly ICivicaServiceGateway _gateway;
         private readonly ICacheProvider _cacheProvider;
+        private readonly IBenefitsService _benefitsService;
 
-        public CouncilTaxService(ICivicaServiceGateway gateway, ICacheProvider cacheProvider)
+        public CouncilTaxService(ICivicaServiceGateway gateway, ICacheProvider cacheProvider, IBenefitsService benefitsService)
         {
             _gateway = gateway;
             _cacheProvider = cacheProvider;
+            _benefitsService = benefitsService;
         }
 
         public async Task<CouncilTaxDetailsModel> GetBaseCouncilTaxAccount(string personReference){
@@ -75,8 +78,7 @@ namespace revs_bens_service.Services.CouncilTax
             var documentsResponse = await _gateway.GetDocuments(personReference);
             model = documentsResponse.Parse<List<CouncilTaxDocumentReference>>().ResponseContent.DocumentsMapper(model, year);
 
-            var isBenefitsResponse = await _gateway.IsBenefitsClaimant(personReference);
-            model.HasBenefits = isBenefitsResponse.Parse<bool>().ResponseContent;
+            model.HasBenefits = await _benefitsService.IsBenefitsClaimant(personReference);
 
             _ = _cacheProvider.SetStringAsync(key, JsonConvert.SerializeObject(model));
 

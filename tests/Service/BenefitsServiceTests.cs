@@ -170,7 +170,7 @@ namespace revs_bens_service_tests.Service
         }
 
         [Fact]
-        public async void IsBenefitsClaimant_ShouldCallGateway()
+        public async void IsBenefitsClaimant_ShouldCallGateway_IfNoResponseCached()
         {
             // Arrange
             _mockGateway
@@ -186,6 +186,55 @@ namespace revs_bens_service_tests.Service
 
             // Assert
             _mockGateway.Verify(_ => _.IsBenefitsClaimant(It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async void IsBenefitsClaimant_ShouldNotCallGateway_IfResponseCached()
+        {
+            // Arrange
+            _cache
+                .Setup(_ => _.GetStringAsync(It.IsAny<string>()))
+                .ReturnsAsync("false");
+
+            // Act
+            await _service.IsBenefitsClaimant("123456");
+
+            // Assert
+            _mockGateway.Verify(_ => _.IsBenefitsClaimant(It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async void IsBenefitsClaimant_ShouldCallCache_GetString()
+        {
+            // Arrange
+            _cache
+                .Setup(_ => _.GetStringAsync(It.IsAny<string>()))
+                .ReturnsAsync("false");
+
+            // Act
+            await _service.IsBenefitsClaimant(It.IsAny<string>());
+
+            // Assert
+            _cache.Verify(_ => _.GetStringAsync(It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async void IsBenefitsClaimant_ShouldCallCache_SetString()
+        {
+            // Arrange
+            _mockGateway
+                .Setup(_ => _.IsBenefitsClaimant(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent("true")
+                });
+
+            // Act
+            await _service.IsBenefitsClaimant(It.IsAny<string>());
+
+            // Assert
+            _cache.Verify(_ => _.SetStringAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }
 
         [Fact]

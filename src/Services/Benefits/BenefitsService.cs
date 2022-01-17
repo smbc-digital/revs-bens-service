@@ -24,21 +24,25 @@ namespace revs_bens_service.Services.Benefits
 
         public async Task<bool> IsBenefitsClaimant(string personReference)
         {
+            var cacheResponse = await _cacheProvider.GetStringAsync($"{personReference}-{CacheKeys.HasBenefits}");
+            
+            if (!string.IsNullOrEmpty(cacheResponse))
+                return JsonConvert.DeserializeObject<bool>(cacheResponse);
+
             var response = await _civicaServiceGateway.IsBenefitsClaimant(personReference);
 
-            if (response.IsSuccessStatusCode)
-            {
-                return response.Parse<bool>().ResponseContent;
-            }
-
-            throw new Exception($"IsBenefitsClaimant({personReference}) failed with status code: {response.StatusCode}");
+            if (!response.IsSuccessStatusCode)
+                throw new Exception($"IsBenefitsClaimant({personReference}) failed with status code: {response.StatusCode}");
+            
+            _ = _cacheProvider.SetStringAsync($"{personReference}-{CacheKeys.HasBenefits}", JsonConvert.SerializeObject(response.Parse<bool>().ResponseContent));
+            return response.Parse<bool>().ResponseContent;
         }
 
         public async Task<Claim> GetBenefits(string personReference)
         {
             var cacheResponse = await _cacheProvider.GetStringAsync($"{personReference}-{CacheKeys.BenefitDetails}");
 
-           if (!string.IsNullOrEmpty(cacheResponse))
+            if (!string.IsNullOrEmpty(cacheResponse))
             {
                 return JsonConvert.DeserializeObject<Claim>(cacheResponse);
             }
