@@ -4,6 +4,8 @@ namespace revs_bens_service.Utils.StorageProvider
     {
         BenefitDetails,
         CouncilTaxDetails,
-        HasBenefits
+        HasBenefits,
+        ReducedCouncilTaxDetails,
+        CouncilTaxAccounts
     }
 }

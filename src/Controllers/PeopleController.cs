@@ -40,6 +40,19 @@ namespace revs_bens_service.Controllers
             Ok(await _councilTaxService.GetBaseCouncilTaxAccount(personReference));
 
         [HttpGet]
+        [Route("{personReference}/council-tax/current")]
+        public async Task<IActionResult> GetCurrentCouncilTaxAccountNumber([FromRoute] [Required] string personReference) =>
+            Ok(await _councilTaxService.GetCurrentCouncilTaxAccountNumber(personReference));
+
+        [HttpGet]
+        [Route("{personReference}/reduced-council-tax/{accountReference}/{year}")]
+        public async Task<IActionResult> GetReducedCouncilTaxDetails(
+            [FromRoute][Required] string personReference,
+            [FromRoute][Required] string accountReference,
+            [FromRoute][Required] int year) =>
+            Ok(await _councilTaxService.GetReducedCouncilTaxDetails(personReference, accountReference, year));
+
+        [HttpGet]
         [Route("{personReference}/council-tax/{accountReference}/{year}")]
         public async Task<IActionResult> GetCouncilTaxDetails(
             [FromRoute][Required]string personReference,
