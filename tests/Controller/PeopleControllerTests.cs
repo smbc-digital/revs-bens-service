@@ -16,17 +16,36 @@ namespace revs_bens_service_tests.Controller
 
         public PeopleControllerTests()
         {
+            _mockBenefitsService
+                .Setup(_ => _.GetBenefits(It.IsAny<string>()))
+                .ReturnsAsync(new Claim());
+
+            _mockBenefitsService
+                .Setup(_ => _.IsBenefitsClaimant(It.IsAny<string>()))
+                .ReturnsAsync(true);
+
+            _mockCouncilTaxService
+                .Setup(_ => _.GetDocumentForAccount(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(new byte[1]);
+
+            _mockCouncilTaxService
+                .Setup(_ => _.GetCouncilTaxDetails(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
+                .ReturnsAsync(new CouncilTaxDetailsModel());
+
+            _mockCouncilTaxService
+                .Setup(_ => _.GetReducedCouncilTaxDetails(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
+                .ReturnsAsync(new CouncilTaxDetailsModel());
+
+            _mockCouncilTaxService
+                .Setup(_ => _.GetCurrentCouncilTaxAccountNumber(It.IsAny<string>()))
+                .ReturnsAsync("123");
+
             _controller = new PeopleController(_mockBenefitsService.Object, _mockCouncilTaxService.Object);
         }
 
         [Fact]
         public async void IsBenefitsClaimant_ShouldCallBenefitsService()
         {
-            // Arrange
-            _mockBenefitsService
-                .Setup(_ => _.IsBenefitsClaimant(It.IsAny<string>()))
-                .ReturnsAsync(It.IsAny<bool>());
-
             // Act
             await _controller.IsBenefitsClaimant(It.IsAny<string>());
 
@@ -35,28 +54,8 @@ namespace revs_bens_service_tests.Controller
         }
 
         [Fact]
-        public async void IsBenefitsClaimant_ShouldReturnOk()
-        {
-            // Arrange
-            _mockBenefitsService
-                .Setup(_ => _.IsBenefitsClaimant(It.IsAny<string>()))
-                .ReturnsAsync(It.IsAny<bool>());
-
-            // Act
-            var result = await _controller.IsBenefitsClaimant(It.IsAny<string>());
-
-            // Assert
-            Assert.IsType<OkObjectResult>(result);
-        }
-
-        [Fact]
         public async void IsBenefitsClaimant_ShouldReturnBool()
         {
-            // Arrange
-            _mockBenefitsService
-                .Setup(_ => _.IsBenefitsClaimant(It.IsAny<string>()))
-                .ReturnsAsync(true);
-
             // Act
             var result = await _controller.IsBenefitsClaimant(It.IsAny<string>());
 
@@ -68,11 +67,6 @@ namespace revs_bens_service_tests.Controller
         [Fact]
         public async void GetBenefits_ShouldCallBenefitsService()
         {
-            // Arrange
-            _mockBenefitsService
-                .Setup(_ => _.GetBenefits(It.IsAny<string>()))
-                .ReturnsAsync(It.IsAny<Claim>());
-
             // Act
             await _controller.GetBenefits(It.IsAny<string>());
 
@@ -81,28 +75,8 @@ namespace revs_bens_service_tests.Controller
         }
 
         [Fact]
-        public async void GetBenefits_ShouldReturnOk()
-        {
-            // Arrange
-            _mockBenefitsService
-                .Setup(_ => _.GetBenefits(It.IsAny<string>()))
-                .ReturnsAsync(It.IsAny<Claim>());
-
-            // Act
-            var result = await _controller.GetBenefits(It.IsAny<string>());
-
-            // Assert
-            Assert.IsType<OkObjectResult>(result);
-        }
-
-        [Fact]
         public async void GetBenefits_ShouldReturnClaim()
         {
-            // Arrange
-            _mockBenefitsService
-                .Setup(_ => _.GetBenefits(It.IsAny<string>()))
-                .ReturnsAsync(new Claim());
-
             // Act
             var result = await _controller.GetBenefits(It.IsAny<string>());
 
@@ -112,13 +86,50 @@ namespace revs_bens_service_tests.Controller
         }
 
         [Fact]
+        public async void GetCurrentCouncilTaxAccountNumber_ShouldCallCouncilTaxService()
+        {
+            // Act
+            await _controller.GetCurrentCouncilTaxAccountNumber("personReference");
+
+            // Assert
+            _mockCouncilTaxService.Verify(_ => _.GetCurrentCouncilTaxAccountNumber(It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async void GetCurrentCouncilTaxAccountNumber_ShouldReturnString()
+        {
+            // Act
+            var result = await _controller.GetCurrentCouncilTaxAccountNumber("personReference");
+
+            // Assert
+            var resultObject = Assert.IsType<OkObjectResult>(result);
+            Assert.IsType<string>(resultObject.Value);
+        }
+
+        [Fact]
+        public async void GetReducedCouncilTaxDetails_ShouldCallCouncilTaxService()
+        {
+            // Act
+            await _controller.GetReducedCouncilTaxDetails("personReference", "accountReference", 2021);
+
+            // Assert
+            _mockCouncilTaxService.Verify(_ => _.GetReducedCouncilTaxDetails(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()), Times.Once);
+        }
+
+        [Fact]
+        public async void GetReducedCouncilTaxDetails_ShouldReturnCouncilTaxDetailsModel()
+        {
+            // Act
+            var result = await _controller.GetReducedCouncilTaxDetails("personReference", "accountReference", 2021);
+
+            // Assert
+            var resultObject = Assert.IsType<OkObjectResult>(result);
+            Assert.IsType<CouncilTaxDetailsModel>(resultObject.Value);
+        }
+
+        [Fact]
         public async void GetCouncilTaxDetails_ShouldCallCouncilTaxService()
         {
-            // Arrange
-            _mockCouncilTaxService
-                .Setup(_ => _.GetCouncilTaxDetails(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
-                .ReturnsAsync(It.IsAny<CouncilTaxDetailsModel>());
-
             // Act
             await _controller.GetCouncilTaxDetails("personReference", "accountReference", 2021);
 
@@ -127,28 +138,8 @@ namespace revs_bens_service_tests.Controller
         }
 
         [Fact]
-        public async void GetCouncilTaxDetails_ShouldReturnOk()
-        {
-            // Arrange
-            _mockCouncilTaxService
-                .Setup(_ => _.GetCouncilTaxDetails(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
-                .ReturnsAsync(It.IsAny<CouncilTaxDetailsModel>());
-
-            // Act
-            var result = await _controller.GetCouncilTaxDetails("personReference", "accountReference", 2021);
-
-            // Assert
-            Assert.IsType<OkObjectResult>(result);
-        }
-
-        [Fact]
         public async void GetCouncilTaxDetails_ShouldReturnCouncilTaxDetailsModel()
         {
-            // Arrange
-            _mockCouncilTaxService
-                .Setup(_ => _.GetCouncilTaxDetails(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
-                .ReturnsAsync(new CouncilTaxDetailsModel());
-
             // Act
             var result = await _controller.GetCouncilTaxDetails("personReference", "accountReference", 2021);
 
@@ -160,11 +151,6 @@ namespace revs_bens_service_tests.Controller
         [Fact]
         public async void GetDocumentForAccount_ShouldCallCouncilTaxService()
         {
-            // Arrange
-            _mockCouncilTaxService
-                .Setup(_ => _.GetDocumentForAccount(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync(new byte[1]);
-
             // Act
             await _controller.GetDocumentForAccount("personReference", "accountReference", "documentId");
 
@@ -205,11 +191,6 @@ namespace revs_bens_service_tests.Controller
         [Fact]
         public async void GetDocumentForAccount_ShouldReturnFileContentResult()
         {
-            // Arrange
-            _mockCouncilTaxService
-                .Setup(_ => _.GetDocumentForAccount(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync(new byte[1]);
-
             // Act
             var result = await _controller.GetDocumentForAccount("personReference", "accountReference", "documentId");
 

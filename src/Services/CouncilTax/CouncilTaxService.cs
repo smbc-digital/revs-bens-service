@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -50,7 +49,7 @@ namespace revs_bens_service.Services.CouncilTax
             return model;
         }
 
-        public async Task<IList<CouncilTaxAccountDetails>> GetCouncilTaxAccounts(string personReference)
+        public async Task<List<CouncilTaxAccountDetails>> GetCouncilTaxAccounts(string personReference)
         {
             var key = $"{personReference}-{DateTime.Now.Year}-{CacheKeys.CouncilTaxAccounts}";
             var cacheResponse = await _cacheProvider.GetStringAsync(key);
@@ -69,6 +68,9 @@ namespace revs_bens_service.Services.CouncilTax
         public async Task<string> GetCurrentCouncilTaxAccountNumber(string personReference)
         {
             var accounts = await GetCouncilTaxAccounts(personReference);
+
+            if (!accounts.Any())
+                return string.Empty;
 
             var reference = accounts.Any(_ => _.Status.Equals("CURRENT"))
                 ? accounts.First(_ => _.Status == "CURRENT").Reference
@@ -109,7 +111,6 @@ namespace revs_bens_service.Services.CouncilTax
 
             return model;
         }
-
 
         public async Task<CouncilTaxDetailsModel> GetCouncilTaxDetails(string personReference, string accountReference, int year)
         {

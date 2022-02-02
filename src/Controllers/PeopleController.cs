@@ -50,7 +50,7 @@ namespace revs_bens_service.Controllers
             [FromRoute][Required] string personReference,
             [FromRoute][Required] string accountReference,
             [FromRoute][Required] int year) =>
-            Ok(await _councilTaxService.GetReducedCouncilTaxDetails(personReference, accountReference, year));
+                Ok(await _councilTaxService.GetReducedCouncilTaxDetails(personReference, accountReference, year));
 
         [HttpGet]
         [Route("{personReference}/council-tax/{accountReference}/{year}")]
