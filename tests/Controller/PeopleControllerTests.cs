@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 using revs_bens_service.Controllers;
 using revs_bens_service.Services.Benefits;
@@ -44,7 +45,7 @@ namespace revs_bens_service_tests.Controller
         }
 
         [Fact]
-        public async void IsBenefitsClaimant_ShouldCallBenefitsService()
+        public async Task IsBenefitsClaimant_ShouldCallBenefitsService()
         {
             // Act
             await _controller.IsBenefitsClaimant(It.IsAny<string>());
@@ -54,7 +55,7 @@ namespace revs_bens_service_tests.Controller
         }
 
         [Fact]
-        public async void IsBenefitsClaimant_ShouldReturnBool()
+        public async Task IsBenefitsClaimant_ShouldReturnBool()
         {
             // Act
             var result = await _controller.IsBenefitsClaimant(It.IsAny<string>());
@@ -65,7 +66,7 @@ namespace revs_bens_service_tests.Controller
         }
 
         [Fact]
-        public async void GetBenefits_ShouldCallBenefitsService()
+        public async Task GetBenefits_ShouldCallBenefitsService()
         {
             // Act
             await _controller.GetBenefits(It.IsAny<string>());
@@ -75,7 +76,7 @@ namespace revs_bens_service_tests.Controller
         }
 
         [Fact]
-        public async void GetBenefits_ShouldReturnClaim()
+        public async Task GetBenefits_ShouldReturnClaim()
         {
             // Act
             var result = await _controller.GetBenefits(It.IsAny<string>());
@@ -86,7 +87,7 @@ namespace revs_bens_service_tests.Controller
         }
 
         [Fact]
-        public async void GetCurrentCouncilTaxAccountNumber_ShouldCallCouncilTaxService()
+        public async Task GetCurrentCouncilTaxAccountNumber_ShouldCallCouncilTaxService()
         {
             // Act
             await _controller.GetCurrentCouncilTaxAccountNumber("personReference");
@@ -96,7 +97,7 @@ namespace revs_bens_service_tests.Controller
         }
 
         [Fact]
-        public async void GetCurrentCouncilTaxAccountNumber_ShouldReturnString()
+        public async Task GetCurrentCouncilTaxAccountNumber_ShouldReturnString()
         {
             // Act
             var result = await _controller.GetCurrentCouncilTaxAccountNumber("personReference");
@@ -107,7 +108,7 @@ namespace revs_bens_service_tests.Controller
         }
 
         [Fact]
-        public async void GetReducedCouncilTaxDetails_ShouldCallCouncilTaxService()
+        public async Task GetReducedCouncilTaxDetails_ShouldCallCouncilTaxService()
         {
             // Act
             await _controller.GetReducedCouncilTaxDetails("personReference", "accountReference", 2021);
@@ -117,7 +118,7 @@ namespace revs_bens_service_tests.Controller
         }
 
         [Fact]
-        public async void GetReducedCouncilTaxDetails_ShouldReturnCouncilTaxDetailsModel()
+        public async Task GetReducedCouncilTaxDetails_ShouldReturnCouncilTaxDetailsModel()
         {
             // Act
             var result = await _controller.GetReducedCouncilTaxDetails("personReference", "accountReference", 2021);
@@ -128,7 +129,7 @@ namespace revs_bens_service_tests.Controller
         }
 
         [Fact]
-        public async void GetCouncilTaxDetails_ShouldCallCouncilTaxService()
+        public async Task GetCouncilTaxDetails_ShouldCallCouncilTaxService()
         {
             // Act
             await _controller.GetCouncilTaxDetails("personReference", "accountReference", 2021);
@@ -138,7 +139,7 @@ namespace revs_bens_service_tests.Controller
         }
 
         [Fact]
-        public async void GetCouncilTaxDetails_ShouldReturnCouncilTaxDetailsModel()
+        public async Task GetCouncilTaxDetails_ShouldReturnCouncilTaxDetailsModel()
         {
             // Act
             var result = await _controller.GetCouncilTaxDetails("personReference", "accountReference", 2021);
@@ -149,7 +150,7 @@ namespace revs_bens_service_tests.Controller
         }
 
         [Fact]
-        public async void GetDocumentForAccount_ShouldCallCouncilTaxService()
+        public async Task GetDocumentForAccount_ShouldCallCouncilTaxService()
         {
             // Act
             await _controller.GetDocumentForAccount("personReference", "accountReference", "documentId");
@@ -159,7 +160,7 @@ namespace revs_bens_service_tests.Controller
         }
 
         [Fact]
-        public async void GetDocumentForAccount_ShouldReturnNotFound_IfDocumentIsNull()
+        public async Task GetDocumentForAccount_ShouldReturnNotFound_IfDocumentIsNull()
         {
             // Arrange
             _mockCouncilTaxService
@@ -174,7 +175,7 @@ namespace revs_bens_service_tests.Controller
         }
 
         [Fact]
-        public async void GetDocumentForAccount_ShouldReturnNoContent_IfByteArrayIsEmpty()
+        public async Task GetDocumentForAccount_ShouldReturnNoContent_IfByteArrayIsEmpty()
         {
             // Arrange
             _mockCouncilTaxService
@@ -189,7 +190,7 @@ namespace revs_bens_service_tests.Controller
         }
 
         [Fact]
-        public async void GetDocumentForAccount_ShouldReturnFileContentResult()
+        public async Task GetDocumentForAccount_ShouldReturnFileContentResult()
         {
             // Act
             var result = await _controller.GetDocumentForAccount("personReference", "accountReference", "documentId");

@@ -323,7 +323,7 @@ namespace revs_bens_service_tests.Service
             _mockGateway.Verify(_ => _.GetAccount(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
             _mockGateway.Verify(_ => _.GetAllTransactionsForYear(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()), Times.Never);
             _mockGateway.Verify(_ => _.GetPaymentSchedule(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
-            _mockGateway.Verify(_ => _.GetCurrentProperty(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            _mockGateway.Verify(_ => _.GetCurrentProperty(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
             _mockBenefitsService.Verify(_ => _.IsBenefitsClaimant(It.IsAny<string>()), Times.Once);
         }
 
@@ -338,7 +338,6 @@ namespace revs_bens_service_tests.Service
 
             // Assert
             _mockGateway.Verify(_ => _.GetAccount(It.IsAny<string>(), expectedAccountReference), Times.Once);
-            _mockGateway.Verify(_ => _.GetCurrentProperty(It.IsAny<string>(), expectedAccountReference), Times.Once);
         }
 
         [Fact]

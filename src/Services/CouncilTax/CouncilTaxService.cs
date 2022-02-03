@@ -95,9 +95,6 @@ namespace revs_bens_service.Services.CouncilTax
 
             model.Accounts = await GetCouncilTaxAccounts(personReference);
 
-            var currentPropertyResponse = await _gateway.GetCurrentProperty(personReference, trimmedAccountReference);
-            model = currentPropertyResponse.Parse<Place>().ResponseContent.MapCurrentProperty(model);
-
             var documentsResponse = await _gateway.GetDocuments(personReference);
             model = documentsResponse.Parse<List<CouncilTaxDocumentReference>>().ResponseContent.DocumentsMapper(model, year);
 
