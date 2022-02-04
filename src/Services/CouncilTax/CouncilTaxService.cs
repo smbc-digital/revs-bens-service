@@ -20,6 +20,7 @@ namespace revs_bens_service.Services.CouncilTax
         private readonly ICivicaServiceGateway _gateway;
         private readonly ICacheProvider _cacheProvider;
         private readonly IBenefitsService _benefitsService;
+        private readonly string _current = "CURRENT";
 
         public CouncilTaxService(ICivicaServiceGateway gateway, ICacheProvider cacheProvider, IBenefitsService benefitsService)
         {
@@ -37,8 +38,8 @@ namespace revs_bens_service.Services.CouncilTax
 
             var accountsResponse = await _gateway.GetAccounts(personReference);
             var model = accountsResponse.Parse<List<CtaxActDetails>>().ResponseContent.MapAccounts(new CouncilTaxDetailsModel());
-            var reference = model.Accounts.Any(_ => _.Status.Equals("CURRENT"))
-                ? model.Accounts.First(_ => _.Status == "CURRENT").Reference
+            var reference = model.Accounts.Any(_ => _.Status.Equals(_current))
+                ? model.Accounts.First(_ => _.Status.Equals(_current)).Reference
                 : model.Accounts.First().Reference;
 
             var account = await _gateway.GetAccount(personReference, reference);
@@ -72,8 +73,8 @@ namespace revs_bens_service.Services.CouncilTax
             if (!accounts.Any())
                 return string.Empty;
 
-            var reference = accounts.Any(_ => _.Status.Equals("CURRENT"))
-                ? accounts.First(_ => _.Status == "CURRENT").Reference
+            var reference = accounts.Any(_ => _.Status.Equals(_current))
+                ? accounts.First(_ => _.Status.Equals(_current)).Reference
                 : accounts.First().Reference;
 
             return reference;
