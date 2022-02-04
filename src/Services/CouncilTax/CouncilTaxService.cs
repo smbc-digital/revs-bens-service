@@ -20,6 +20,7 @@ namespace revs_bens_service.Services.CouncilTax
         private readonly ICivicaServiceGateway _gateway;
         private readonly ICacheProvider _cacheProvider;
         private readonly IBenefitsService _benefitsService;
+        private readonly string _current = "CURRENT";
 
         public CouncilTaxService(ICivicaServiceGateway gateway, ICacheProvider cacheProvider, IBenefitsService benefitsService)
         {
@@ -37,8 +38,8 @@ namespace revs_bens_service.Services.CouncilTax
 
             var accountsResponse = await _gateway.GetAccounts(personReference);
             var model = accountsResponse.Parse<List<CtaxActDetails>>().ResponseContent.MapAccounts(new CouncilTaxDetailsModel());
-            var reference = model.Accounts.Any(_ => _.Status.Equals("CURRENT"))
-                ? model.Accounts.First(_ => _.Status == "CURRENT").Reference
+            var reference = model.Accounts.Any(_ => _.Status.Equals(_current))
+                ? model.Accounts.First(_ => _.Status.Equals(_current)).Reference
                 : model.Accounts.First().Reference;
 
             var account = await _gateway.GetAccount(personReference, reference);
@@ -48,7 +49,67 @@ namespace revs_bens_service.Services.CouncilTax
 
             return model;
         }
-        
+
+        public async Task<List<CouncilTaxAccountDetails>> GetCouncilTaxAccounts(string personReference)
+        {
+            var key = $"{personReference}-{DateTime.Now.Year}-{CacheKeys.CouncilTaxAccounts}";
+            var cacheResponse = await _cacheProvider.GetStringAsync(key);
+
+            if (!string.IsNullOrEmpty(cacheResponse))
+                return JsonConvert.DeserializeObject<CouncilTaxDetailsModel>(cacheResponse).Accounts.ToList();
+
+            var accountsResponse = await _gateway.GetAccounts(personReference);
+            var model = accountsResponse.Parse<List<CtaxActDetails>>().ResponseContent.MapAccounts(new CouncilTaxDetailsModel());
+
+            _ = _cacheProvider.SetStringAsync(key, JsonConvert.SerializeObject(model));
+
+            return model.Accounts.ToList();
+        }
+
+        public async Task<string> GetCurrentCouncilTaxAccountNumber(string personReference)
+        {
+            var accounts = await GetCouncilTaxAccounts(personReference);
+
+            if (!accounts.Any())
+                return string.Empty;
+
+            var reference = accounts.Any(_ => _.Status.Equals(_current))
+                ? accounts.First(_ => _.Status.Equals(_current)).Reference
+                : accounts.First().Reference;
+
+            return reference;
+        }
+
+        public async Task<CouncilTaxDetailsModel> GetReducedCouncilTaxDetails(string personReference, string accountReference, int year)
+        {
+            var trimmedAccountReference = accountReference.Trim();
+            var key = $"{personReference}-{trimmedAccountReference}-{year}-{CacheKeys.ReducedCouncilTaxDetails}";
+            var cacheResponse = await _cacheProvider.GetStringAsync(key);
+
+            if (!string.IsNullOrEmpty(cacheResponse))
+                return JsonConvert.DeserializeObject<CouncilTaxDetailsModel>(cacheResponse);
+
+            var model = new CouncilTaxDetailsModel();
+
+            var accountResponse = await _gateway.GetAccount(personReference, trimmedAccountReference);
+            model = accountResponse.Parse<CouncilTaxAccountResponse>().ResponseContent.MapAccount(model, year);
+
+            model.Accounts = await GetCouncilTaxAccounts(personReference);
+
+            var documentsResponse = await _gateway.GetDocuments(personReference);
+            model = documentsResponse.Parse<List<CouncilTaxDocumentReference>>().ResponseContent.DocumentsMapper(model, year);
+
+            model.HasBenefits = await _benefitsService.IsBenefitsClaimant(personReference);
+
+            model.TransactionHistory = new List<TransactionModel>();
+            model.UpcomingPayments = new List<InstallmentModel>();
+            model.PreviousPayments = new List<TransactionModel>();
+
+            _ = _cacheProvider.SetStringAsync(key, JsonConvert.SerializeObject(model));
+
+            return model;
+        }
+
         public async Task<CouncilTaxDetailsModel> GetCouncilTaxDetails(string personReference, string accountReference, int year)
         {
             var trimmedAccountReference = accountReference.Trim();
@@ -63,8 +124,7 @@ namespace revs_bens_service.Services.CouncilTax
             var accountResponse = await _gateway.GetAccount(personReference, trimmedAccountReference);
             model = accountResponse.Parse<CouncilTaxAccountResponse>().ResponseContent.MapAccount(model, year);
 
-            var accountsResponse = await _gateway.GetAccounts(personReference);
-            model = accountsResponse.Parse<List<CtaxActDetails>>().ResponseContent.MapAccounts(model);
+            model.Accounts = await GetCouncilTaxAccounts(personReference);
 
             var transactionsResponse = await _gateway.GetAllTransactionsForYear(personReference, trimmedAccountReference, year);
             model = transactionsResponse.Parse<List<Transaction>>().ResponseContent.MapTransactions(model);

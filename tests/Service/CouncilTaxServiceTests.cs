@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -27,9 +28,16 @@ namespace revs_bens_service_tests.Service
         {
             new CtaxActDetails
             {
-                AccountStatus = "status",
+                AccountStatus = "CURRENT",
                 CtaxActAddress = "address",
                 CtaxActRef = "123",
+                CtaxBalance = "100.00"
+            },
+            new CtaxActDetails
+            {
+                AccountStatus = "OLD",
+                CtaxActAddress = "address",
+                CtaxActRef = "789",
                 CtaxBalance = "100.00"
             }
         });
@@ -191,7 +199,190 @@ namespace revs_bens_service_tests.Service
         }
 
         [Fact]
-        public async void GetCouncilTaxDetails_ShouldCallGateway()
+        public async Task GetCouncilTaxAccounts_ShouldCallGateway()
+        {
+            // Act
+            await _service.GetCouncilTaxAccounts("123");
+
+            // Assert
+            _mockGateway.Verify(_ => _.GetAccounts(It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetCouncilTaxAccounts_ShouldCallCacheProvider()
+        {
+            // Arrange
+            var cacheKey = $"123-{DateTime.Now.Year}-{CacheKeys.CouncilTaxAccounts}";
+
+            // Act
+            await _service.GetCouncilTaxAccounts("123");
+
+            // Assert
+            _cache.Verify(_ => _.GetStringAsync(cacheKey), Times.Once);
+            _cache.Verify(_ => _.SetStringAsync(cacheKey, It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetCouncilTaxAccounts_ShouldReturnCtaxActDetailsModel()
+        {
+            // Act
+            var result = await _service.GetCouncilTaxAccounts("123");
+
+            // Assert
+            Assert.IsType<List<CouncilTaxAccountDetails>>(result);
+        }
+
+        [Fact]
+        public async Task GetCouncilTaxAccounts_ShouldNotCallGatewayWhenCacheAvailable()
+        {
+            // Arrange
+            _cache
+                .Setup(_ => _.GetStringAsync(It.IsAny<string>()))
+                .ReturnsAsync("{\"Accounts\":[]}");
+
+            // Act
+            await _service.GetCouncilTaxAccounts("123");
+
+            // Assert
+            _mockGateway.Verify(_ => _.GetAccounts(It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task GetCurrentCouncilTaxAccountNumber_ShouldReturnEmptyStringIfNoAccountsFound()
+        {
+            // Arrange
+            _mockGateway
+                .Setup(_ => _.GetAccounts(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent("[]")
+                });
+
+            // Act
+            var response = await _service.GetCurrentCouncilTaxAccountNumber("123");
+
+            // Assert
+            Assert.Equal(string.Empty, response);
+        }
+
+        [Fact]
+        public async Task GetCurrentCouncilTaxAccountNumber_ShouldReturnAccountWithCurrentStatus()
+        {
+            // Act
+            var response = await _service.GetCurrentCouncilTaxAccountNumber("123");
+
+            // Assert
+            Assert.Equal("123", response);
+        }
+
+        [Fact]
+        public async Task GetCurrentCouncilTaxAccountNumber_ShouldReturnFirstAccountInListIfNoCurrent()
+        {
+            // Arrange
+            var mockCivicaResponse = JsonConvert.SerializeObject(new List<CtaxActDetails>
+            {
+                new CtaxActDetails
+                {
+                    AccountStatus = "OLD",
+                    CtaxActAddress = "address",
+                    CtaxActRef = "456",
+                    CtaxBalance = "100.00"
+                },
+                new CtaxActDetails
+                {
+                    AccountStatus = "OLD",
+                    CtaxActAddress = "address",
+                    CtaxActRef = "789",
+                    CtaxBalance = "100.00"
+                }
+            });
+
+            _mockGateway
+                .Setup(_ => _.GetAccounts(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(mockCivicaResponse)
+                });
+
+            // Act
+            var response = await _service.GetCurrentCouncilTaxAccountNumber("123");
+
+            // Assert
+            Assert.Equal("456", response);
+        }
+
+        [Fact]
+        public async Task GetReducedCouncilTaxDetails_ShouldCallGateway()
+        {
+            // Act
+            await _service.GetReducedCouncilTaxDetails("123", "5001111234", 2018);
+
+            // Assert
+            _mockGateway.Verify(_ => _.GetAccount(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            _mockGateway.Verify(_ => _.GetAllTransactionsForYear(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()), Times.Never);
+            _mockGateway.Verify(_ => _.GetPaymentSchedule(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
+            _mockGateway.Verify(_ => _.GetCurrentProperty(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _mockBenefitsService.Verify(_ => _.IsBenefitsClaimant(It.IsAny<string>()), Times.Once);
+        }
+
+        [Theory]
+        [InlineData(" 123456 ", "123456")]
+        [InlineData("     123456", "123456")]
+        [InlineData("123456    ", "123456")]
+        public async Task GetReducedCouncilTaxDetails_ShouldUseTrimmedAccountReference(string accountReference, string expectedAccountReference)
+        {
+            // Act
+            await _service.GetReducedCouncilTaxDetails("123", accountReference, 2018);
+
+            // Assert
+            _mockGateway.Verify(_ => _.GetAccount(It.IsAny<string>(), expectedAccountReference), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetReducedCouncilTaxDetails_ShouldReturnCouncilTaxDetailsModel()
+        {
+            // Act
+            var result = await _service.GetReducedCouncilTaxDetails("123", "5001111234", 2018);
+
+            // Assert
+            Assert.IsType<CouncilTaxDetailsModel>(result);
+        }
+
+        [Fact]
+        public async Task GetReducedCouncilTaxDetails_ShouldCallCacheProvider()
+        {
+            // Arrange
+            var cacheKey = $"123-5001111234-2018-{CacheKeys.ReducedCouncilTaxDetails}";
+
+            // Act
+            await _service.GetReducedCouncilTaxDetails("123", "5001111234", 2018);
+
+            // Assert
+            _cache.Verify(_ => _.GetStringAsync(cacheKey), Times.Once);
+            _cache.Verify(_ => _.SetStringAsync(cacheKey, It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetReducedCouncilTaxDetails_ShouldNotCallGatewayWhenCacheAvailable()
+        {
+            // Arrange
+            _cache
+                .Setup(_ => _.GetStringAsync(It.IsAny<string>()))
+                .ReturnsAsync("{\"IsDirectDebitCustomer\":true}");
+
+            // Act
+            await _service.GetReducedCouncilTaxDetails("123", "5001111234", 2018);
+
+            // Assert
+            _mockGateway.Verify(_ => _.GetAccount(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _mockGateway.Verify(_ => _.GetCurrentProperty(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _mockBenefitsService.Verify(_ => _.IsBenefitsClaimant(It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task GetCouncilTaxDetails_ShouldCallGateway()
         {
             // Act
             await _service.GetCouncilTaxDetails("123", "5001111234", 2018);
@@ -208,7 +399,7 @@ namespace revs_bens_service_tests.Service
         [InlineData(" 123456 ", "123456")]
         [InlineData("     123456", "123456")]
         [InlineData("123456    ", "123456")]
-        public async void GetCouncilTaxDetails_ShouldUseTrimmedAccountReference(string accountReference, string expectedAccountReference)
+        public async Task GetCouncilTaxDetails_ShouldUseTrimmedAccountReference(string accountReference, string expectedAccountReference)
         {
             // Act
             await _service.GetCouncilTaxDetails("123", accountReference, 2018);
@@ -220,7 +411,7 @@ namespace revs_bens_service_tests.Service
         }
 
         [Fact]
-        public async void GetCouncilTaxDetails_ShouldReturnCouncilTaxDetailsModel()
+        public async Task GetCouncilTaxDetails_ShouldReturnCouncilTaxDetailsModel()
         {
             // Act
             var result = await _service.GetCouncilTaxDetails("123", "5001111234", 2018);
@@ -230,22 +421,21 @@ namespace revs_bens_service_tests.Service
         }
 
         [Fact]
-        public async void GetCouncilTaxDetails_ShouldCallCacheProvider()
+        public async Task GetCouncilTaxDetails_ShouldCallCacheProvider()
         {
             // Arrange
-            _cache
-                .Setup(_ => _.SetStringAsync(It.IsAny<string>(), It.IsAny<string>()));
+            var cacheKey = $"123-5001111234-2018-{CacheKeys.CouncilTaxDetails}";
 
             // Act
             await _service.GetCouncilTaxDetails("123", "5001111234", 2018);
 
             // Assert
-            _cache.Verify(_ => _.GetStringAsync(It.IsAny<string>()), Times.Once);
-            _cache.Verify(_ => _.SetStringAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            _cache.Verify(_ => _.GetStringAsync(cacheKey), Times.Once);
+            _cache.Verify(_ => _.SetStringAsync(cacheKey, It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
-        public async void GetCouncilTaxDetails_ShouldNotCallGatewayWhenCacheAvailable()
+        public async Task GetCouncilTaxDetails_ShouldNotCallGatewayWhenCacheAvailable()
         {
             // Arrange
             _cache
