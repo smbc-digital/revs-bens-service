@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
 using System.Threading.Tasks;
+using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
 
 namespace revs_bens_service.Services.CouncilTax
 {
@@ -17,5 +18,7 @@ namespace revs_bens_service.Services.CouncilTax
         Task<CouncilTaxDetailsModel> GetCouncilTaxDetails(string personReference, string accountReference, int year);
 
         Task<byte[]> GetDocumentForAccount(string personReference, string accountReference, string documentId);
+
+        Task<IEnumerable<CouncilTaxDocument>> GetDocumentsForPerson(string personReference);
     }
 }

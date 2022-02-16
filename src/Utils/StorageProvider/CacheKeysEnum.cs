@@ -6,6 +6,7 @@ namespace revs_bens_service.Utils.StorageProvider
         CouncilTaxDetails,
         HasBenefits,
         ReducedCouncilTaxDetails,
-        CouncilTaxAccounts
+        CouncilTaxAccounts,
+        Documents
     }
 }

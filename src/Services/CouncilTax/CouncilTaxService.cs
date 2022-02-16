@@ -22,14 +22,13 @@ namespace revs_bens_service.Services.CouncilTax
         private readonly IBenefitsService _benefitsService;
         private readonly string _current = "CURRENT";
 
-        public CouncilTaxService(ICivicaServiceGateway gateway, ICacheProvider cacheProvider, IBenefitsService benefitsService)
-        {
+        public CouncilTaxService(ICivicaServiceGateway gateway, ICacheProvider cacheProvider, IBenefitsService benefitsService) {
             _gateway = gateway;
             _cacheProvider = cacheProvider;
             _benefitsService = benefitsService;
         }
 
-        public async Task<CouncilTaxDetailsModel> GetBaseCouncilTaxAccount(string personReference){
+        public async Task<CouncilTaxDetailsModel> GetBaseCouncilTaxAccount(string personReference) {
             var key = $"{personReference}-{DateTime.Now.Year}-{CacheKeys.CouncilTaxDetails}";
             var cacheResponse = await _cacheProvider.GetStringAsync(key);
 
@@ -50,8 +49,7 @@ namespace revs_bens_service.Services.CouncilTax
             return model;
         }
 
-        public async Task<List<CouncilTaxAccountDetails>> GetCouncilTaxAccounts(string personReference)
-        {
+        public async Task<List<CouncilTaxAccountDetails>> GetCouncilTaxAccounts(string personReference) {
             var key = $"{personReference}-{DateTime.Now.Year}-{CacheKeys.CouncilTaxAccounts}";
             var cacheResponse = await _cacheProvider.GetStringAsync(key);
 
@@ -66,8 +64,7 @@ namespace revs_bens_service.Services.CouncilTax
             return model.Accounts.ToList();
         }
 
-        public async Task<string> GetCurrentCouncilTaxAccountNumber(string personReference)
-        {
+        public async Task<string> GetCurrentCouncilTaxAccountNumber(string personReference) {
             var accounts = await GetCouncilTaxAccounts(personReference);
 
             if (!accounts.Any())
@@ -80,8 +77,7 @@ namespace revs_bens_service.Services.CouncilTax
             return reference;
         }
 
-        public async Task<CouncilTaxDetailsModel> GetReducedCouncilTaxDetails(string personReference, string accountReference, int year)
-        {
+        public async Task<CouncilTaxDetailsModel> GetReducedCouncilTaxDetails(string personReference, string accountReference, int year) {
             var trimmedAccountReference = accountReference.Trim();
             var key = $"{personReference}-{trimmedAccountReference}-{year}-{CacheKeys.ReducedCouncilTaxDetails}";
             var cacheResponse = await _cacheProvider.GetStringAsync(key);
@@ -96,8 +92,7 @@ namespace revs_bens_service.Services.CouncilTax
 
             model.Accounts = await GetCouncilTaxAccounts(personReference);
 
-            var documentsResponse = await _gateway.GetDocuments(personReference);
-            model = documentsResponse.Parse<List<CouncilTaxDocumentReference>>().ResponseContent.DocumentsMapper(model, year);
+            model.Documents = await GetDocumentsForPerson(personReference);
 
             model.HasBenefits = await _benefitsService.IsBenefitsClaimant(personReference);
 
@@ -110,8 +105,7 @@ namespace revs_bens_service.Services.CouncilTax
             return model;
         }
 
-        public async Task<CouncilTaxDetailsModel> GetCouncilTaxDetails(string personReference, string accountReference, int year)
-        {
+        public async Task<CouncilTaxDetailsModel> GetCouncilTaxDetails(string personReference, string accountReference, int year) {
             var trimmedAccountReference = accountReference.Trim();
             var key = $"{personReference}-{trimmedAccountReference}-{year}-{CacheKeys.CouncilTaxDetails}";
             var cacheResponse = await _cacheProvider.GetStringAsync(key);
@@ -135,8 +129,7 @@ namespace revs_bens_service.Services.CouncilTax
             var currentPropertyResponse = await _gateway.GetCurrentProperty(personReference, trimmedAccountReference);
             model = currentPropertyResponse.Parse<Place>().ResponseContent.MapCurrentProperty(model);
 
-            var documentsResponse = await _gateway.GetDocuments(personReference);
-            model = documentsResponse.Parse<List<CouncilTaxDocumentReference>>().ResponseContent.DocumentsMapper(model, year);
+            model.Documents = await GetDocumentsForPerson(personReference);
 
             model.HasBenefits = await _benefitsService.IsBenefitsClaimant(personReference);
 
@@ -145,8 +138,7 @@ namespace revs_bens_service.Services.CouncilTax
             return model;
         }
 
-        public async Task<byte[]> GetDocumentForAccount(string personReference, string accountReference, string documentId)
-        {
+        public async Task<byte[]> GetDocumentForAccount(string personReference, string accountReference, string documentId) {
             var trimmedAccountReference = accountReference.Trim();
             var key = $"{personReference}-{trimmedAccountReference}-{documentId}-{CacheKeys.CouncilTaxDetails}";
             var cacheResponse = await _cacheProvider.GetStringAsync(key);
@@ -164,6 +156,36 @@ namespace revs_bens_service.Services.CouncilTax
             _ = _cacheProvider.SetStringAsync(key, JsonConvert.SerializeObject(document));
 
             return document;
+        }
+
+        public async Task<IEnumerable<CouncilTaxDocument>> GetDocumentsForPerson(string personReference) {
+            var key = $"{personReference}-{CacheKeys.Documents}";
+
+            var cacheResponse = await _cacheProvider.GetStringAsync(key);
+
+            if (!string.IsNullOrEmpty(cacheResponse))
+                return JsonConvert.DeserializeObject<IEnumerable<CouncilTaxDocument>>(cacheResponse);
+
+            var response = await _gateway.GetDocuments(personReference);
+
+            if (response.StatusCode.Equals(HttpStatusCode.NotFound))
+                return null;
+
+            var documents = response.Parse<IEnumerable<CouncilTaxDocumentReference>>().ResponseContent;
+
+            var parsedDocuments = documents
+                .Select(_ => new CouncilTaxDocument {
+                    AccountReference = _.AccountReference,
+                    DateCreated = _.DateCreated,
+                    DocumentId = _.DocumentId,
+                    DocumentName = _.DocumentName,
+                    DocumentType = _.DocumentType,
+                    Downloaded = _.Downloaded
+                }).ToList();
+
+            _ = _cacheProvider.SetStringAsync(key, JsonConvert.SerializeObject(parsedDocuments));
+
+            return parsedDocuments;
         }
     }
 }
