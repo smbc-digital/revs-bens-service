@@ -1,9 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using revs_bens_service.Services.Benefits;
 using revs_bens_service.Services.CouncilTax;
 using StockportGovUK.AspNetCore.Attributes.TokenAuthentication;
+using StockportGovUK.NetStandard.Models.RevsAndBens;
 
 namespace revs_bens_service.Controllers
 {
@@ -76,6 +78,18 @@ namespace revs_bens_service.Controllers
                 return NoContent();
             
             return File(document, "application/pdf", "download.pdf");
+        }
+
+        [HttpGet]
+        [Route("{personReference}/council-tax/documents")]
+        public async Task<IActionResult> GetDocumentsForPerson([FromRoute][Required] string personReference) 
+        {
+            List<CouncilTaxDocument> documents = await _councilTaxService.GetDocumentsForPerson(personReference);
+
+            if (documents is null)
+                return NotFound();
+
+            return Ok(documents);
         }
     }
 }
