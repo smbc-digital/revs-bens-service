@@ -19,6 +19,6 @@ namespace revs_bens_service.Services.CouncilTax
 
         Task<byte[]> GetDocumentForAccount(string personReference, string accountReference, string documentId);
 
-        Task<IEnumerable<CouncilTaxDocument>> GetDocumentsForPerson(string personReference);
+        Task<List<CouncilTaxDocument>> GetDocumentsForPerson(string personReference);
     }
 }

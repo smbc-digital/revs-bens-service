@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using revs_bens_service.Services.Benefits;
+using revs_bens_service.Services.Benefits.Mappers;
 using revs_bens_service.Services.CouncilTax.Mappers;
 using revs_bens_service.Utils.Parsers;
 using revs_bens_service.Utils.StorageProvider;
@@ -92,7 +93,8 @@ namespace revs_bens_service.Services.CouncilTax
 
             model.Accounts = await GetCouncilTaxAccounts(personReference);
 
-            model.Documents = await GetDocumentsForPerson(personReference);
+            var documents = await GetDocumentsForPerson(personReference);
+            model = documents.DocumentsMapper(model, year);
 
             model.HasBenefits = await _benefitsService.IsBenefitsClaimant(personReference);
 
@@ -129,7 +131,8 @@ namespace revs_bens_service.Services.CouncilTax
             var currentPropertyResponse = await _gateway.GetCurrentProperty(personReference, trimmedAccountReference);
             model = currentPropertyResponse.Parse<Place>().ResponseContent.MapCurrentProperty(model);
 
-            model.Documents = await GetDocumentsForPerson(personReference);
+            var documents = await GetDocumentsForPerson(personReference);
+            model = documents.DocumentsMapper(model, year);
 
             model.HasBenefits = await _benefitsService.IsBenefitsClaimant(personReference);
 
@@ -158,34 +161,24 @@ namespace revs_bens_service.Services.CouncilTax
             return document;
         }
 
-        public async Task<IEnumerable<CouncilTaxDocument>> GetDocumentsForPerson(string personReference) {
+        public async Task<List<CouncilTaxDocument>> GetDocumentsForPerson(string personReference) {
             var key = $"{personReference}-{CacheKeys.Documents}";
 
             var cacheResponse = await _cacheProvider.GetStringAsync(key);
 
             if (!string.IsNullOrEmpty(cacheResponse))
-                return JsonConvert.DeserializeObject<IEnumerable<CouncilTaxDocument>>(cacheResponse);
+                return JsonConvert.DeserializeObject<List<CouncilTaxDocument>>(cacheResponse);
 
             var response = await _gateway.GetDocuments(personReference);
 
             if (response.StatusCode.Equals(HttpStatusCode.NotFound))
                 return null;
 
-            var documents = response.Parse<IEnumerable<CouncilTaxDocumentReference>>().ResponseContent;
+            var documents = response.Parse<List<CouncilTaxDocument>>().ResponseContent;
 
-            var parsedDocuments = documents
-                .Select(_ => new CouncilTaxDocument {
-                    AccountReference = _.AccountReference,
-                    DateCreated = _.DateCreated,
-                    DocumentId = _.DocumentId,
-                    DocumentName = _.DocumentName,
-                    DocumentType = _.DocumentType,
-                    Downloaded = _.Downloaded
-                }).ToList();
+            _ = _cacheProvider.SetStringAsync(key, JsonConvert.SerializeObject(documents));
 
-            _ = _cacheProvider.SetStringAsync(key, JsonConvert.SerializeObject(parsedDocuments));
-
-            return parsedDocuments;
+            return documents;
         }
     }
 }

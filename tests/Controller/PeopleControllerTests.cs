@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using revs_bens_service.Controllers;
@@ -28,6 +29,10 @@ namespace revs_bens_service_tests.Controller
             _mockCouncilTaxService
                 .Setup(_ => _.GetDocumentForAccount(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(new byte[1]);
+
+            _mockCouncilTaxService
+                .Setup(_ => _.GetDocumentsForPerson(It.IsAny<string>()))
+                .ReturnsAsync(new List<CouncilTaxDocument>());
 
             _mockCouncilTaxService
                 .Setup(_ => _.GetCouncilTaxDetails(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
@@ -197,6 +202,41 @@ namespace revs_bens_service_tests.Controller
 
             // Assert
             Assert.IsType<FileContentResult>(result);
+        }
+
+        [Fact]
+        public async Task GetDocumentsForPerson_ShouldCallCouncilTaxService()
+        {
+            // Act
+            await _controller.GetDocumentsForPerson("personReference");
+
+            // Assert
+            _mockCouncilTaxService.Verify(_ => _.GetDocumentsForPerson(It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetDocumentsForPerson_ShouldReturnNotFound_IfNullResponse()
+        {
+            // Arrange
+            _mockCouncilTaxService
+                .Setup(_ => _.GetDocumentsForPerson(It.IsAny<string>()))
+                .ReturnsAsync((List<CouncilTaxDocument>) null);
+
+            // Act
+            var result = await _controller.GetDocumentsForPerson("personReference");
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task GetDocumentsForPerson_ShouldReturnOk()
+        {
+            // Act
+            var result = await _controller.GetDocumentsForPerson("personReference");
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
     }
 }

@@ -131,6 +131,20 @@ namespace revs_bens_service_tests.Service
             Address2 = "address2"
         });
 
+        private readonly string _mockDocumentsResponse = JsonConvert.SerializeObject(new List<CouncilTaxDocument>
+        {
+            new CouncilTaxDocument
+            {
+                AccountReference = "123",
+                DateCreated = DateTime.Now.ToShortDateString(),
+                DocumentId = "123",
+                DocumentName = "document.pdf",
+                Downloaded = "yes",
+                DocumentType = "Bill",
+                Module = "C"
+            }
+        });
+
         #endregion
 
         public CouncilTaxServiceTests()
@@ -182,7 +196,7 @@ namespace revs_bens_service_tests.Service
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("[]")
+                    Content = new StringContent(_mockDocumentsResponse)
                 });
 
             _mockBenefitsService
@@ -520,6 +534,51 @@ namespace revs_bens_service_tests.Service
 
             // Assert
             Assert.IsType<byte[]>(result);
+        }
+
+        [Fact]
+        public async Task GetDocumentsForPerson_ShouldCallCacheProvider()
+        {
+            // Act
+            await _service.GetDocumentsForPerson("personReference");
+
+            // Assert
+            _cache.Verify(_ => _.GetStringAsync(It.IsAny<string>()), Times.Once);
+            _cache.Verify(_ => _.SetStringAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetDocumentsForPerson_ShouldNotCallGatewayOrCacheProvider_IfCacheAvailable()
+        {
+            // Arrange
+            _cache
+                .Setup(_ => _.GetStringAsync(It.IsAny<string>()))
+                .ReturnsAsync(_mockDocumentsResponse);
+
+            // Act
+            await _service.GetDocumentsForPerson("personReference");
+
+            // Assert
+            _mockGateway.Verify(_ => _.GetDocuments(It.IsAny<string>()), Times.Never);
+            _cache.Verify(_ => _.SetStringAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task GetDocumentsForPerson_ShouldReturnNull_IfDocumentsNotFound()
+        {
+            // Arrange
+            _mockGateway
+                .Setup(_ => _.GetDocuments(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.NotFound
+                });
+
+            // Act
+            var result = await _service.GetDocumentsForPerson("personReference");
+
+            // Assert
+            Assert.Null(result);
         }
     }
 }

@@ -82,10 +82,11 @@ namespace revs_bens_service.Controllers
 
         [HttpGet]
         [Route("{personReference}/council-tax/documents")]
-        public async Task<IActionResult> GetDocumentsForPerson([FromRoute][Required] string personReference) {
-            IEnumerable<CouncilTaxDocument> documents = await _councilTaxService.GetDocumentsForPerson(personReference);
+        public async Task<IActionResult> GetDocumentsForPerson([FromRoute][Required] string personReference) 
+        {
+            List<CouncilTaxDocument> documents = await _councilTaxService.GetDocumentsForPerson(personReference);
 
-            if (documents == null)
+            if (documents is null)
                 return NotFound();
 
             return Ok(documents);

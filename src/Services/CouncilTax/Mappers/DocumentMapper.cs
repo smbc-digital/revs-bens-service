@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
 using CouncilTaxDetailsModel = StockportGovUK.NetStandard.Models.RevsAndBens.CouncilTaxDetailsModel;
 
@@ -11,21 +10,13 @@ namespace revs_bens_service.Services.CouncilTax.Mappers
     public static class DocumentMapper
     {
         public static CouncilTaxDetailsModel DocumentsMapper(
-            this List<CouncilTaxDocumentReference> documentResponse,
+            this List<CouncilTaxDocument> documentResponse,
             CouncilTaxDetailsModel model,
             int taxYear)
         {
             model.Documents = documentResponse
                 .Where(_ => _.AccountReference == model.Reference)
-                .Select(_ => new CouncilTaxDocument
-                {
-                    AccountReference = _.AccountReference,
-                    DateCreated = _.DateCreated,
-                    DocumentId = _.DocumentId,
-                    DocumentName = _.DocumentName,
-                    DocumentType = _.DocumentType,
-                    Downloaded = _.Downloaded
-                }).ToList();
+                .ToList();
             
             if(model.Documents != null )
             {
