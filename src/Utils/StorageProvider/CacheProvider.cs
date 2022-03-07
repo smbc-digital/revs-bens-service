@@ -18,7 +18,7 @@ namespace revs_bens_service.Utils.StorageProvider
             _allowCaching = configuration.GetValue<string>("StorageProvider:Type") != "None";
             _defaultTimeout = configuration.GetValue<double>("StorageProvider:Timeout") != 0
                 ? configuration.GetValue<double>("StorageProvider:Timeout")
-                : 20;
+                : 480;
             _cacheProvider = cacheProvider;
         }
 
