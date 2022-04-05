@@ -12,6 +12,7 @@ using StockportGovUK.NetStandard.Gateways.CivicaService;
 using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
 using Xunit;
+using PersonName = StockportGovUK.NetStandard.Models.Civica.CouncilTax.PersonName;
 
 namespace revs_bens_service_tests.Service
 {
@@ -41,6 +42,9 @@ namespace revs_bens_service_tests.Service
                 CtaxBalance = "100.00"
             }
         });
+
+        private readonly string _mockEmptyCouncilTaxAccountsResponse =
+            JsonConvert.SerializeObject(new List<CtaxActDetails>());
 
         private readonly string _mockCouncilTaxAccountResponse = JsonConvert.SerializeObject(new CouncilTaxAccountResponse
         {
@@ -145,6 +149,12 @@ namespace revs_bens_service_tests.Service
             }
         });
 
+        private readonly string _mockPersonNameResponse = JsonConvert.SerializeObject(new PersonName
+        {
+            Forenames = "First",
+            Surname = "Last"
+        });
+
         #endregion
 
         public CouncilTaxServiceTests()
@@ -210,6 +220,93 @@ namespace revs_bens_service_tests.Service
                     StatusCode = HttpStatusCode.OK,
                     Content = new StringContent("[]")
                 });
+
+            _mockGateway
+                .Setup(_ => _.GetPerson(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(_mockPersonNameResponse)
+                });
+        }
+
+        [Fact]
+        public async Task GetBaseCouncilTaxAccount_ShouldCallGetGetAccounts()
+        {
+            // Act
+            await _service.GetBaseCouncilTaxAccount("test");
+
+            // Assert
+            _mockGateway.Verify(_ => _.GetAccounts(It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetBaseCouncilTaxAccount_ShouldCallGetGetAccount_IfAccountsExist()
+        {
+            // Act
+            await _service.GetBaseCouncilTaxAccount("test");
+
+            // Assert
+            _mockGateway.Verify(_ => _.GetAccount(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetBaseCouncilTaxAccount_ShouldCallGetPerson_IfNoAccounts()
+        {
+            // Arrange
+            _mockGateway
+                .Setup(_ => _.GetAccounts(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(_mockEmptyCouncilTaxAccountsResponse)
+                });
+
+            // Act
+            await _service.GetBaseCouncilTaxAccount("test");
+
+            // Assert
+            _mockGateway.Verify(_ => _.GetPerson(It.IsAny<string>()), Times.Once);
+            _mockGateway.Verify(_ => _.GetAccount(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task GetBaseCouncilTaxAccount_ShouldSetPersonName_IfNoAccounts()
+        {
+            // Arrange
+            _mockGateway
+                .Setup(_ => _.GetAccounts(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(_mockEmptyCouncilTaxAccountsResponse)
+                });
+
+            // Act
+            var result = await _service.GetBaseCouncilTaxAccount("test");
+
+            // Assert
+            Assert.Equal("First Last", result.PersonName);
+        }
+
+        [Fact]
+        public async Task GetPerson_ShouldCallGateway()
+        {
+            // Act
+            await _service.GetPerson("test");
+
+            // Assert
+            _mockGateway.Verify(_ => _.GetPerson(It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetPerson_ShouldReturnPersonNameType()
+        {
+            // Act
+            var result = await _service.GetPerson("test");
+
+            // Assert
+            Assert.IsType<PersonName>(result);
         }
 
         [Fact]

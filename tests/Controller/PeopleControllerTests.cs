@@ -46,6 +46,10 @@ namespace revs_bens_service_tests.Controller
                 .Setup(_ => _.GetCurrentCouncilTaxAccountNumber(It.IsAny<string>()))
                 .ReturnsAsync("123");
 
+            _mockCouncilTaxService
+                .Setup(_ => _.GetPerson(It.IsAny<string>()))
+                .ReturnsAsync(new StockportGovUK.NetStandard.Models.Civica.CouncilTax.PersonName());
+
             _controller = new PeopleController(_mockBenefitsService.Object, _mockCouncilTaxService.Object);
         }
 
@@ -89,6 +93,27 @@ namespace revs_bens_service_tests.Controller
             // Assert
             var resultObject = Assert.IsType<OkObjectResult>(result);
             Assert.IsType<Claim>(resultObject.Value);
+        }
+
+        [Fact]
+        public async Task GetPerson_ShouldCallCouncilTaxService()
+        {
+            // Act
+            await _controller.GetPerson(It.IsAny<string>());
+
+            // Assert
+            _mockCouncilTaxService.Verify(_ => _.GetPerson(It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetPerson_ShouldReturnPersonNameType()
+        {
+            // Act
+            var result = await _controller.GetPerson(It.IsAny<string>());
+
+            // Assert
+            var resultObject = Assert.IsType<OkObjectResult>(result);
+            Assert.IsType<StockportGovUK.NetStandard.Models.Civica.CouncilTax.PersonName>(resultObject.Value);
         }
 
         [Fact]

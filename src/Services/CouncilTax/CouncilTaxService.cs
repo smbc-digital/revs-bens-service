@@ -11,6 +11,7 @@ using revs_bens_service.Utils.StorageProvider;
 using StockportGovUK.NetStandard.Gateways.CivicaService;
 using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
 using StockportGovUK.NetStandard.Models.RevsAndBens;
+using PersonName = StockportGovUK.NetStandard.Models.Civica.CouncilTax.PersonName;
 using Transaction = revs_bens_service.Services.Models.Transaction;
 
 namespace revs_bens_service.Services.CouncilTax
@@ -39,6 +40,15 @@ namespace revs_bens_service.Services.CouncilTax
 
             var accountsResponse = await _gateway.GetAccounts(personReference);
             var model = accountsResponse.Parse<List<CtaxActDetails>>().ResponseContent.MapAccounts(new CouncilTaxDetailsModel());
+
+            if (!model.Accounts.Any())
+            {
+                var personResponse = await _gateway.GetPerson(personReference);
+                var person = personResponse.Parse<PersonName>().ResponseContent;
+                model.PersonName = $"{person.Forenames} {person.Surname}";
+                return model;
+            }
+
             var reference = model.Accounts.Any(_ => _.Status.Equals(_current))
                 ? model.Accounts.First(_ => _.Status.Equals(_current)).Reference
                 : model.Accounts.First().Reference;
@@ -79,6 +89,12 @@ namespace revs_bens_service.Services.CouncilTax
                 : accounts.First().Reference;
 
             return reference;
+        }
+
+        public async Task<PersonName> GetPerson(string personReference)
+        {
+            var person = await _gateway.GetPerson(personReference);
+            return person.Parse<PersonName>().ResponseContent;
         }
 
         public async Task<CouncilTaxDetailsModel> GetReducedCouncilTaxDetails(string personReference, string accountReference, int year)
