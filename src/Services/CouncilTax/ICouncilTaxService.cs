@@ -2,6 +2,7 @@
 using StockportGovUK.NetStandard.Models.RevsAndBens;
 using System.Threading.Tasks;
 using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
+using PersonName = StockportGovUK.NetStandard.Models.Civica.CouncilTax.PersonName;
 
 namespace revs_bens_service.Services.CouncilTax
 {
@@ -12,6 +13,8 @@ namespace revs_bens_service.Services.CouncilTax
         Task<List<CouncilTaxAccountDetails>> GetCouncilTaxAccounts(string personReference);
 
         Task<string> GetCurrentCouncilTaxAccountNumber(string personReference);
+
+        Task<PersonName> GetPerson(string personReference);
 
         Task<CouncilTaxDetailsModel> GetReducedCouncilTaxDetails(string personReference, string accountReference, int year);
 

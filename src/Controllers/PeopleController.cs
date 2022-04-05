@@ -37,6 +37,11 @@ namespace revs_bens_service.Controllers
             Ok(await _benefitsService.GetBenefits(personReference));
 
         [HttpGet]
+        [Route("{personReference}/person")]
+        public async Task<IActionResult> GetPerson([FromRoute][Required] string personReference) =>
+            Ok(await _councilTaxService.GetPerson(personReference));
+
+        [HttpGet]
         [Route("{personReference}/council-tax")]
         public async Task<IActionResult> GetBaseCouncilTaxAccount([FromRoute][Required]string personReference) =>
             Ok(await _councilTaxService.GetBaseCouncilTaxAccount(personReference));
