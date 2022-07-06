@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -75,6 +76,49 @@ namespace revs_bens_service_tests.Controller
         }
 
         [Fact]
+        public async Task IsBenefitsClaimant_ShouldReturnOk()
+        {
+            // Act
+            var result = await _controller.IsBenefitsClaimant("personReference");
+
+            // Assert
+            var actionResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal(200, actionResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task IsBenefitsClaimant_ShouldReturnNotFound()
+        {
+            // Arrange
+            _mockBenefitsService
+                .Setup(_ => _.IsBenefitsClaimant(It.IsAny<string>()))
+                .ThrowsAsync(new ArgumentException());
+
+            // Act
+            var result = await _controller.IsBenefitsClaimant("personReference");
+
+            // Assert
+            var actionResult = Assert.IsType<NotFoundObjectResult>(result);
+            Assert.Equal(404, actionResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task IsBenefitsClaimant_ShouldReturn500()
+        {
+            // Arrange
+            _mockBenefitsService
+                .Setup(_ => _.IsBenefitsClaimant(It.IsAny<string>()))
+                .ThrowsAsync(new Exception());
+
+            // Act
+            var result = await _controller.IsBenefitsClaimant("personReference");
+
+            // Assert
+            var actionResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(500, actionResult.StatusCode);
+        }
+
+        [Fact]
         public async Task GetBenefits_ShouldCallBenefitsService()
         {
             // Act
@@ -114,6 +158,59 @@ namespace revs_bens_service_tests.Controller
             // Assert
             var resultObject = Assert.IsType<OkObjectResult>(result);
             Assert.IsType<StockportGovUK.NetStandard.Models.Civica.CouncilTax.PersonName>(resultObject.Value);
+        }
+
+        [Fact]
+        public async Task GetBaseCouncilTaxAccount_ShouldCallService()
+        {
+            // Act
+            await _controller.GetBaseCouncilTaxAccount("personReference");
+
+            // Assert
+            _mockCouncilTaxService.Verify(_ => _.GetBaseCouncilTaxAccount(It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetBaseCouncilTaxAccount_ShouldReturnOk()
+        {
+            // Act
+            var result = await _controller.GetBaseCouncilTaxAccount("personReference");
+
+            // Assert
+            var actionResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal(200, actionResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetBaseCouncilTaxAccount_ShouldReturnNotFound()
+        {
+            // Arrange
+            _mockCouncilTaxService
+                .Setup(_ => _.GetBaseCouncilTaxAccount(It.IsAny<string>()))
+                .ThrowsAsync(new ArgumentException());
+
+            // Act
+            var result = await _controller.GetBaseCouncilTaxAccount("personReference");
+
+            // Assert
+            var actionResult = Assert.IsType<NotFoundObjectResult>(result);
+            Assert.Equal(404, actionResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetBaseCouncilTaxAccount_ShouldReturn500()
+        {
+            // Arrange
+            _mockCouncilTaxService
+                .Setup(_ => _.GetBaseCouncilTaxAccount(It.IsAny<string>()))
+                .ThrowsAsync(new Exception());
+
+            // Act
+            var result = await _controller.GetBaseCouncilTaxAccount("personReference");
+
+            // Assert
+            var actionResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(500, actionResult.StatusCode);
         }
 
         [Fact]

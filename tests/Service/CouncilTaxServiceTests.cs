@@ -241,6 +241,36 @@ namespace revs_bens_service_tests.Service
         }
 
         [Fact]
+        public async Task GetBaseCouncilTaxAccount_ShouldThrowArgumentException_IfStatusNotFound()
+        {
+            // Arrange
+            _mockGateway
+                .Setup(_ => _.GetAccounts(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.NotFound
+                });
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentException>(() => _service.GetBaseCouncilTaxAccount("test"));
+        }
+
+        [Fact]
+        public async Task GetBaseCouncilTaxAccount_ShouldThrowException_ForOtherUnsuccessfulRequest()
+        {
+            // Arrange
+            _mockGateway
+                .Setup(_ => _.GetAccounts(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.InternalServerError
+                });
+
+            // Act & Assert
+            await Assert.ThrowsAsync<Exception>(() => _service.GetBaseCouncilTaxAccount("test"));
+        }
+
+        [Fact]
         public async Task GetBaseCouncilTaxAccount_ShouldCallGetGetAccount_IfAccountsExist()
         {
             // Act

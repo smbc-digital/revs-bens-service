@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -28,8 +29,22 @@ namespace revs_bens_service.Controllers
 
         [HttpGet]
         [Route("{personReference}/is-benefits-claimant")]
-        public async Task<IActionResult> IsBenefitsClaimant([FromRoute][Required]string personReference) =>
-            Ok(await _benefitsService.IsBenefitsClaimant(personReference));
+        public async Task<IActionResult> IsBenefitsClaimant([FromRoute] [Required] string personReference)
+        {
+            try
+            {
+                return Ok(await _benefitsService.IsBenefitsClaimant(personReference));
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+            
 
         [HttpGet]
         [Route("{personReference}/benefits")]
@@ -43,8 +58,22 @@ namespace revs_bens_service.Controllers
 
         [HttpGet]
         [Route("{personReference}/council-tax")]
-        public async Task<IActionResult> GetBaseCouncilTaxAccount([FromRoute][Required]string personReference) =>
-            Ok(await _councilTaxService.GetBaseCouncilTaxAccount(personReference));
+        public async Task<IActionResult> GetBaseCouncilTaxAccount([FromRoute] [Required] string personReference)
+        {
+            try
+            {
+                return Ok(await _councilTaxService.GetBaseCouncilTaxAccount(personReference));
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+            
 
         [HttpGet]
         [Route("{personReference}/council-tax/current")]
