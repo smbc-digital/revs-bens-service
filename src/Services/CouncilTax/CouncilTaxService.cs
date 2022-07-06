@@ -39,6 +39,14 @@ namespace revs_bens_service.Services.CouncilTax
                 return JsonConvert.DeserializeObject<CouncilTaxDetailsModel>(cacheResponse);
 
             var accountsResponse = await _gateway.GetAccounts(personReference);
+            if (!accountsResponse.IsSuccessStatusCode)
+            {
+                throw accountsResponse.StatusCode switch
+                {
+                    HttpStatusCode.NotFound => new ArgumentException(accountsResponse.ReasonPhrase),
+                    _ => new Exception($"GetBaseCouncilTaxAccount({personReference}) failed with status code: {accountsResponse.StatusCode}")
+                };
+            }
             var model = accountsResponse.Parse<List<CtaxActDetails>>().ResponseContent.MapAccounts(new CouncilTaxDetailsModel());
 
             if (!model.Accounts.Any())

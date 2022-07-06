@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using revs_bens_service.Services.Benefits.Mappers;
@@ -32,7 +33,13 @@ namespace revs_bens_service.Services.Benefits
             var response = await _civicaServiceGateway.IsBenefitsClaimant(personReference);
 
             if (!response.IsSuccessStatusCode)
-                throw new Exception($"IsBenefitsClaimant({personReference}) failed with status code: {response.StatusCode}");
+            {
+                throw response.StatusCode switch
+                {
+                    HttpStatusCode.NotFound => new ArgumentException(response.ReasonPhrase),
+                    _ => new Exception($"IsBenefitsClaimant({personReference}) failed with status code: {response.StatusCode}")
+                };
+            }
             
             _ = _cacheProvider.SetStringAsync($"{personReference}-{CacheKeys.HasBenefits}", JsonConvert.SerializeObject(response.Parse<bool>().ResponseContent));
             return response.Parse<bool>().ResponseContent;

@@ -238,12 +238,30 @@ namespace revs_bens_service_tests.Service
         }
 
         [Fact]
-        public async void IsBenefitsClaimant_ShouldThrowError()
+        public async void IsBenefitsClaimant_ShouldThrowArgumentError()
         {
             // Arrange
             _mockGateway
                 .Setup(_ => _.IsBenefitsClaimant(It.IsAny<string>()))
-                .Throws<Exception>();
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.NotFound
+                });
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentException>(() => _service.IsBenefitsClaimant(It.IsAny<string>()));
+        }
+
+        [Fact]
+        public async void IsBenefitsClaimant_ShouldThrowException()
+        {
+            // Arrange
+            _mockGateway
+                .Setup(_ => _.IsBenefitsClaimant(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.InternalServerError
+                });
 
             // Act & Assert
             await Assert.ThrowsAsync<Exception>(() => _service.IsBenefitsClaimant(It.IsAny<string>()));
