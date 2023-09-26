@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Moq;
 using revs_bens_service.Controllers;
 using revs_bens_service.Services.Benefits;
 using revs_bens_service.Services.CouncilTax;
-using StockportGovUK.NetStandard.Models.RevsAndBens;
+using StockportGovUK.NetStandard.Gateways.Models.RevsAndBens;
 using Xunit;
 
 namespace revs_bens_service_tests.Controller
@@ -49,7 +46,7 @@ namespace revs_bens_service_tests.Controller
 
             _mockCouncilTaxService
                 .Setup(_ => _.GetPerson(It.IsAny<string>()))
-                .ReturnsAsync(new StockportGovUK.NetStandard.Models.Civica.CouncilTax.PersonName());
+                .ReturnsAsync(new StockportGovUK.NetStandard.Gateways.Models.Civica.CouncilTax.PersonName());
 
             _controller = new PeopleController(_mockBenefitsService.Object, _mockCouncilTaxService.Object);
         }
@@ -157,7 +154,7 @@ namespace revs_bens_service_tests.Controller
 
             // Assert
             var resultObject = Assert.IsType<OkObjectResult>(result);
-            Assert.IsType<StockportGovUK.NetStandard.Models.Civica.CouncilTax.PersonName>(resultObject.Value);
+            Assert.IsType<StockportGovUK.NetStandard.Gateways.Models.Civica.CouncilTax.PersonName>(resultObject.Value);
         }
 
         [Fact]

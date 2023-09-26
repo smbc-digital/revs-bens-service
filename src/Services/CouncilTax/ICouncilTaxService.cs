@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
-using StockportGovUK.NetStandard.Models.RevsAndBens;
-using System.Threading.Tasks;
-using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
-using PersonName = StockportGovUK.NetStandard.Models.Civica.CouncilTax.PersonName;
+﻿using StockportGovUK.NetStandard.Gateways.Models.RevsAndBens;
+using PersonName = StockportGovUK.NetStandard.Gateways.Models.Civica.CouncilTax.PersonName;
 
 namespace revs_bens_service.Services.CouncilTax
 {

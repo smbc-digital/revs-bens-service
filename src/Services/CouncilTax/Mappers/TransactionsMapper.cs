@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using revs_bens_service.Services.Models;
-using StockportGovUK.NetStandard.Models.RevsAndBens;
+﻿using revs_bens_service.Services.Models;
+using StockportGovUK.NetStandard.Gateways.Models.RevsAndBens;
 using Transaction = revs_bens_service.Services.Models.Transaction;
 
 namespace revs_bens_service.Services.CouncilTax.Mappers

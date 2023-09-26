@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using StockportGovUK.NetStandard.Models.RevsAndBens;
-using CouncilTaxDetailsModel = StockportGovUK.NetStandard.Models.RevsAndBens.CouncilTaxDetailsModel;
+﻿using System.Globalization;
+using StockportGovUK.NetStandard.Gateways.Models.RevsAndBens;
+using CouncilTaxDetailsModel = StockportGovUK.NetStandard.Gateways.Models.RevsAndBens.CouncilTaxDetailsModel;
 
 namespace revs_bens_service.Services.CouncilTax.Mappers
 {

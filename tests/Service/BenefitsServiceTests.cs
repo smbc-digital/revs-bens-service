@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
+﻿using System.Net;
 using Moq;
 using Newtonsoft.Json;
 using revs_bens_service.Services.Benefits;
 using revs_bens_service.Utils.StorageProvider;
 using StockportGovUK.NetStandard.Gateways.CivicaService;
-using StockportGovUK.NetStandard.Models.RevsAndBens;
+using StockportGovUK.NetStandard.Gateways.Models.RevsAndBens;
 using Xunit;
 
 namespace revs_bens_service_tests.Service

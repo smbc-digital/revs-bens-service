@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using revs_bens_service.Services.Benefits.Mappers;
-using StockportGovUK.NetStandard.Models.Enums;
-using StockportGovUK.NetStandard.Models.RevsAndBens;
+﻿using revs_bens_service.Services.Benefits.Mappers;
+using StockportGovUK.NetStandard.Gateways.Enums;
+using StockportGovUK.NetStandard.Gateways.Models.RevsAndBens;
 using Xunit;
 
 namespace revs_bens_service_tests.Service.Mapper

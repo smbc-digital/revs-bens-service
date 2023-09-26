@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
+﻿using System.Net;
 using Moq;
 using Newtonsoft.Json;
 using revs_bens_service.Services.Benefits;
 using revs_bens_service.Services.CouncilTax;
 using revs_bens_service.Utils.StorageProvider;
 using StockportGovUK.NetStandard.Gateways.CivicaService;
-using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
-using StockportGovUK.NetStandard.Models.RevsAndBens;
+using StockportGovUK.NetStandard.Gateways.Models.Civica.CouncilTax;
+using StockportGovUK.NetStandard.Gateways.Models.RevsAndBens;
 using Xunit;
-using PersonName = StockportGovUK.NetStandard.Models.Civica.CouncilTax.PersonName;
+using PersonName = StockportGovUK.NetStandard.Gateways.Models.Civica.CouncilTax.PersonName;
 
 namespace revs_bens_service_tests.Service
 {
@@ -48,7 +44,7 @@ namespace revs_bens_service_tests.Service
 
         private readonly string _mockCouncilTaxAccountResponse = JsonConvert.SerializeObject(new CouncilTaxAccountResponse
         {
-            PersonName = new StockportGovUK.NetStandard.Models.Civica.CouncilTax.PersonName
+            PersonName = new StockportGovUK.NetStandard.Gateways.Models.Civica.CouncilTax.PersonName
             {
                 Forenames = "Test",
                 Surname = "Test"
@@ -127,7 +123,7 @@ namespace revs_bens_service_tests.Service
 
         private readonly string _mockPlacesResponse = JsonConvert.SerializeObject(new Place
         {
-            Band = new StockportGovUK.NetStandard.Models.RevsAndBens.Band
+            Band = new StockportGovUK.NetStandard.Gateways.Models.RevsAndBens.Band
             {
                 Text = "A"
             },

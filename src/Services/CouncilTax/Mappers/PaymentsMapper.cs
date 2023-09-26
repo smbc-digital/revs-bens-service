@@ -1,8 +1,5 @@
-﻿using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
-using StockportGovUK.NetStandard.Models.RevsAndBens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using StockportGovUK.NetStandard.Gateways.Models.Civica.CouncilTax;
+using StockportGovUK.NetStandard.Gateways.Models.RevsAndBens;
 
 namespace revs_bens_service.Services.CouncilTax.Mappers
 {

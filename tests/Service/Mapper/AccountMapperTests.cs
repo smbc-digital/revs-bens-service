@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using revs_bens_service.Services.CouncilTax.Mappers;
-using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
-using StockportGovUK.NetStandard.Models.RevsAndBens;
+﻿using revs_bens_service.Services.CouncilTax.Mappers;
+using StockportGovUK.NetStandard.Gateways.Models.Civica.CouncilTax;
+using StockportGovUK.NetStandard.Gateways.Models.RevsAndBens;
 using Xunit;
 
 namespace revs_bens_service_tests.Service.Mapper
@@ -11,7 +9,7 @@ namespace revs_bens_service_tests.Service.Mapper
     {
         private CouncilTaxAccountResponse model = new CouncilTaxAccountResponse
         {
-            PersonName = new StockportGovUK.NetStandard.Models.Civica.CouncilTax.PersonName
+            PersonName = new StockportGovUK.NetStandard.Gateways.Models.Civica.CouncilTax.PersonName
             {
                 Forenames = "Test",
                 Surname = "Test"

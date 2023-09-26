@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using revs_bens_service.Services.Benefits;
 using revs_bens_service.Services.CouncilTax;
 using StockportGovUK.AspNetCore.Attributes.TokenAuthentication;
-using StockportGovUK.NetStandard.Models.RevsAndBens;
+using StockportGovUK.NetStandard.Gateways.Models.RevsAndBens;
 
 namespace revs_bens_service.Controllers
 {

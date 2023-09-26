@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using StockportGovUK.NetStandard.Models.RevsAndBens;
+﻿using StockportGovUK.NetStandard.Gateways.Models.RevsAndBens;
 
 namespace revs_bens_service.Services.Benefits
 {
