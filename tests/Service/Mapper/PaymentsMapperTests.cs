@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using revs_bens_service.Services.CouncilTax.Mappers;
-using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
-using StockportGovUK.NetStandard.Models.RevsAndBens;
+﻿using revs_bens_service.Services.CouncilTax.Mappers;
+using StockportGovUK.NetStandard.Gateways.Models.Civica.CouncilTax;
+using StockportGovUK.NetStandard.Gateways.Models.RevsAndBens;
 using Xunit;
 
 namespace revs_bens_service_tests.Service.Mapper

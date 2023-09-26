@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using revs_bens_service.Services.CouncilTax.Mappers;
-using revs_bens_service.Services.Models;
-using StockportGovUK.NetStandard.Models.RevsAndBens;
+﻿using revs_bens_service.Services.CouncilTax.Mappers;
+using StockportGovUK.NetStandard.Gateways.Models.RevsAndBens;
 using Xunit;
 using Date = revs_bens_service.Services.Models.Date;
 using PlaceDetail = revs_bens_service.Services.Models.PlaceDetail;

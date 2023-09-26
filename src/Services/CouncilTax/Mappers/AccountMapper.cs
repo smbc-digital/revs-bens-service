@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
-using StockportGovUK.NetStandard.Models.RevsAndBens;
-using CouncilTaxDetailsModel = StockportGovUK.NetStandard.Models.RevsAndBens.CouncilTaxDetailsModel;
+﻿using StockportGovUK.NetStandard.Gateways.Models.Civica.CouncilTax;
+using StockportGovUK.NetStandard.Gateways.Models.RevsAndBens;
+using CouncilTaxDetailsModel = StockportGovUK.NetStandard.Gateways.Models.RevsAndBens.CouncilTaxDetailsModel;
 
 namespace revs_bens_service.Services.CouncilTax.Mappers
 {

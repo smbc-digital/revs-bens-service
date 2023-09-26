@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
+﻿using System.Net;
 using Newtonsoft.Json;
 using revs_bens_service.Services.Benefits;
 using revs_bens_service.Services.CouncilTax.Mappers;
 using revs_bens_service.Utils.Parsers;
 using revs_bens_service.Utils.StorageProvider;
 using StockportGovUK.NetStandard.Gateways.CivicaService;
-using StockportGovUK.NetStandard.Models.Civica.CouncilTax;
-using StockportGovUK.NetStandard.Models.RevsAndBens;
-using PersonName = StockportGovUK.NetStandard.Models.Civica.CouncilTax.PersonName;
+using StockportGovUK.NetStandard.Gateways.Models.Civica.CouncilTax;
+using StockportGovUK.NetStandard.Gateways.Models.RevsAndBens;
+using PersonName = StockportGovUK.NetStandard.Gateways.Models.Civica.CouncilTax.PersonName;
 using Transaction = revs_bens_service.Services.Models.Transaction;
 
 namespace revs_bens_service.Services.CouncilTax

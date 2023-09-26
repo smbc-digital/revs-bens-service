@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
+﻿using System.Net;
 using Newtonsoft.Json;
 using revs_bens_service.Services.Benefits.Mappers;
 using revs_bens_service.Utils.Parsers;
 using revs_bens_service.Utils.StorageProvider;
 using StockportGovUK.NetStandard.Gateways.CivicaService;
-using StockportGovUK.NetStandard.Models.RevsAndBens;
+using StockportGovUK.NetStandard.Gateways.Models.RevsAndBens;
 
 namespace revs_bens_service.Services.Benefits
 {
