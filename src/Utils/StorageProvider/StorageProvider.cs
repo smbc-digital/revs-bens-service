@@ -1,6 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
+﻿using System.Reflection;
+using StackExchange.Redis;
 
 namespace revs_bens_service.Utils.StorageProvider
 {
@@ -13,11 +12,25 @@ namespace revs_bens_service.Utils.StorageProvider
             switch (storageProviderConfiguration["Type"])
             {
                 case "Redis":
+                    var configurationOptions = new ConfigurationOptions
+                    {
+                        EndPoints =
+                        {
+                            { storageProviderConfiguration["Address"] ?? "127.0.0.1",  6379 }
+                        },
+                        ClientName = storageProviderConfiguration["InstanceName"] ?? Assembly.GetEntryAssembly()?.GetName().Name,
+                        SyncTimeout = 30000,
+                        AsyncTimeout = 30000,
+                    };
+
+                    if (!string.IsNullOrEmpty(storageProviderConfiguration["Password"]))
+                        configurationOptions.Password = storageProviderConfiguration["Password"];
+
                     services.AddStackExchangeRedisCache(options =>
                     {
-                        options.Configuration = storageProviderConfiguration["Address"] ?? "127.0.0.1";
-                        options.InstanceName = storageProviderConfiguration["Name"] ?? Assembly.GetEntryAssembly()?.GetName().Name;
+                        options.ConfigurationOptions = configurationOptions;
                     });
+
                     break;
                 case "None":
                     break;
